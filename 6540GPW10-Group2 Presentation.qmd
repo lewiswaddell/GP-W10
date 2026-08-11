@@ -1,0 +1,17 @@
+---
+title: "Predicting Profitability, Returns, and Customer Value in Shopify Sales"
+subtitle: "Shopify Sales Dataset for ML & EDA"
+author: "**Group 2:** <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen Sabilla, Brian Vuong"
+format:
+  revealjs: 
+    theme: [default, cpptheme.scss]
+    slide-number: true
+    scrollable: true
+    controls: true
+    width: 1280
+    height: 720
+    margin: 0.2
+    min-scale: 0.2
+    max-scale: .40
+footer: "IBM6540 | August 12, 2026"
+---
