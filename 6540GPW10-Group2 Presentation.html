@@ -29,7 +29,7 @@
       vertical-align: middle;
     }
   </style>
-  <link rel="stylesheet" href="6540GPW10-Group2 Presentation_files/libs/revealjs/dist/theme/quarto-48f6d5c423ddcbf2a3f4f7da1fbf96fa.css">
+  <link rel="stylesheet" href="6540GPW10-Group2 Presentation_files/libs/revealjs/dist/theme/quarto-d2445de6bc11c11bbc323efc4b28eeec.css">
   <link href="6540GPW10-Group2 Presentation_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
   <link href="6540GPW10-Group2 Presentation_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
   <link href="6540GPW10-Group2 Presentation_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
@@ -175,15 +175,16 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 <li><p>Problem definition</p></li>
 <li><p>Research objectives</p></li>
 </ul>
-<p>&lt;&lt;&lt;&lt;&lt;&lt;&lt; Updated upstream ## Importance of the Research</p>
+</section>
+<section id="importance-of-the-research" class="slide level1">
+<h1>Importance of the Research</h1>
 <ul>
-<li class="fragment">Online retailers pour money into acquisition and discounting, but <strong>returns quietly erode net profit margins</strong> after the sale is already booked as revenue</li>
-<li class="fragment">Every returned order carries a <strong>sunk cost</strong> — the discount was given, the item shipped, and now the shipping cost and processing overhead are absorbed with no revenue to show for it</li>
-<li class="fragment">Without a predictive view of <em>which</em> orders are likely to be returned, businesses can only react to returns after they happen — not prevent them</li>
-<li class="fragment">Identifying the strongest drivers of return risk (<code>product_category</code>, <code>discount_percent</code>, <code>shipping_cost</code>, <code>rating</code>) turns returns from a lagging cost into an <strong>actionable, pre-purchase signal</strong></li>
-<li class="fragment">This directly supports the broader group narrative: margin compression isn’t just a discounting problem or a marketing problem — it’s also a <strong>returns problem</strong>, and this objective isolates that piece</li>
+<li class="fragment">Top-line transaction value is growing across the business, but <strong>net profit margins are being eroded</strong> — and no single team or department owns the full explanation why</li>
+<li class="fragment">Acquisition costs, discounting behavior, customer satisfaction, return rates, and retention all interact, but are typically analyzed in isolation — this project connects them</li>
+<li class="fragment">Understanding <em>which</em> marketing channels perform best (AO1), what drives customer satisfaction (AO2), what triggers returns (AO3), whether repeat customers are more profitable (AO4), and how sales shift seasonally (AO5) gives a full-funnel view of where margin is actually being lost</li>
+<li class="fragment">Predictive models across these objectives let the business move from reactive reporting to <strong>proactively flagging unprofitable channel–category–discount combinations before they happen</strong></li>
+<li class="fragment">This addresses a real operational gap: the business currently lacks any automated, predictive system tying acquisition, satisfaction, returns, and retention together</li>
 </ul>
-<p>======= Importance of the research &gt;&gt;&gt;&gt;&gt;&gt;&gt; Stashed changes</p>
 </section>
 <section id="population-sample" class="slide level1">
 <h1>Population / Sample</h1>
@@ -331,23 +332,25 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 <li><p>Key Findings</p></li>
 <li><p>Recommendations for Businesses</p></li>
 </ul>
-<h2 id="limitations-and-directions-for-future-research">Limitations and Directions for Future Research</h2>
+</section>
+<section id="limitations-and-directions-for-future-research" class="slide level1">
+<h1>Limitations and Directions for Future Research</h1>
 <div class="columns">
 <div class="column" style="width:50%;">
 <h3 id="limitations">Limitations</h3>
 <ul>
-<li class="fragment">Predictive scope was intentionally narrow — only four features (<code>product_category</code>, <code>discount_percent</code>, <code>shipping_cost</code>, <code>rating</code>) were used, so drivers like customer history, marketing channel, or seasonality aren’t captured</li>
-<li class="fragment">Kaggle notes the dataset is “realistic” rather than verified, meaning it is likely synthetic — patterns may not generalize to real Shopify order data</li>
-<li class="fragment">Returns are a minority class (~15%), which caps achievable sensitivity even after optimizing for ROC AUC</li>
-<li class="fragment">The deployed calculator reflects a single static training snapshot — it does not retrain or adapt as new orders come in</li>
+<li class="fragment">Kaggle notes the dataset is “realistic” rather than verified, meaning it is likely <strong>synthetic</strong> — findings may not generalize to real Shopify transaction data</li>
+<li class="fragment">Findings are scoped to this dataset’s countries, categories, and date range (Jan 2023–Jun 2025) and may not generalize beyond it</li>
+<li class="fragment">Each Analytics Objective models its outcome independently — none of the five models account for interactions <em>across</em> objectives (e.g., a channel’s effect on both satisfaction and return risk together)</li>
+<li class="fragment">Several models (e.g., AO3’s return prediction) face class imbalance, which caps achievable sensitivity even after optimizing evaluation metrics like ROC AUC</li>
+<li class="fragment">The deployed model reflects a single static training snapshot and does not retrain or adapt as new orders come in</li>
 </ul>
 </div><div class="column" style="width:50%;">
 <h3 id="future-research">Future Research</h3>
 <ul>
-<li class="fragment">Validate the model against real, non-synthetic transaction data before any operational use</li>
-<li class="fragment">Expand the feature set (customer purchase history, traffic source, seasonality) to test whether <code>shipping_cost</code>’s unexpected top-ranked SHAP importance holds</li>
-<li class="fragment">Explore cost-sensitive classification thresholds tied to actual return-processing costs, rather than a default 0.5 cutoff</li>
-<li class="fragment">Build a monitoring/retraining pipeline to catch model drift once deployed in production</li>
+<li class="fragment">Validate findings against real, non-synthetic transaction data before informing operational decisions</li>
+<li class="fragment">Build an integrated model connecting acquisition, satisfaction, returns, and retention rather than five separate models, to capture cross-objective interactions</li>
+<li class="fragment">Extend the population beyond the current</li>
 </ul>
 </div></div>
 </section>

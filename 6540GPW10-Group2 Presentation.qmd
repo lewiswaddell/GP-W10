@@ -5,7 +5,7 @@ author: "Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron
 
 format:
   revealjs:
-    theme: [default, shopifytheme4.scss]
+    theme: [default, shopifytheme5.scss]
     slide-level: 1
     center-title-slide: true
     title-slide-attributes:
@@ -71,12 +71,12 @@ footer: "IBM6540 | August 12, 2026"
 
 # Importance of the Research
 
-::: {.incremental}
-- Top-line transaction value is growing across the business, but **net profit margins are being eroded** — and no single team or department owns the full explanation why
-- Acquisition costs, discounting behavior, customer satisfaction, return rates, and retention all interact, but are typically analyzed in isolation — this project connects them
-- Understanding *which* marketing channels perform best (AO1), what drives customer satisfaction (AO2), what triggers returns (AO3), whether repeat customers are more profitable (AO4), and how sales shift seasonally (AO5) gives a full-funnel view of where margin is actually being lost
-- Predictive models across these objectives let the business move from reactive reporting to **proactively flagging unprofitable channel–category–discount combinations before they happen**
-- This addresses a real operational gap: the business currently lacks any automated, predictive system tying acquisition, satisfaction, returns, and retention together
+::: incremental
+-   Top-line transaction value is growing across the business, but **net profit margins are being eroded** — and no single team or department owns the full explanation why
+-   Acquisition costs, discounting behavior, customer satisfaction, return rates, and retention all interact, but are typically analyzed in isolation — this project connects them
+-   Understanding *which* marketing channels perform best (AO1), what drives customer satisfaction (AO2), what triggers returns (AO3), whether repeat customers are more profitable (AO4), and how sales shift seasonally (AO5) gives a full-funnel view of where margin is actually being lost
+-   Predictive models across these objectives let the business move from reactive reporting to **proactively flagging unprofitable channel–category–discount combinations before they happen**
+-   This addresses a real operational gap: the business currently lacks any automated, predictive system tying acquisition, satisfaction, returns, and retention together
 :::
 
 # Population / Sample
@@ -99,7 +99,6 @@ footer: "IBM6540 | August 12, 2026"
 ::: callout-important
 Kaggle notes the dataset is "realistic," presumably meaning transactions are not verified, and thus, **synthetic**.
 :::
-
 
 # Sample Characteristics
 
@@ -211,27 +210,29 @@ Kaggle notes the dataset is "realistic," presumably meaning transactions are not
 
 # Limitations and Directions for Future Research
 
-::: {.columns}
-
-::: {.column width="50%"}
+::::::: columns
+:::: {.column width="50%"}
 ### Limitations
 
-::: {.incremental}
-- Kaggle notes the dataset is "realistic" rather than verified, meaning it is likely **synthetic** — findings may not generalize to real Shopify transaction data
-- Findings are scoped to this dataset's countries, categories, and date range (Jan 2023–Jun 2025) and may not generalize beyond it
-- Each Analytics Objective models its outcome independently — none of the five models account for interactions *across* objectives (e.g., a channel's effect on both satisfaction and return risk together)
-- Several models (e.g., AO3's return prediction) face class imbalance, which caps achievable sensitivity even after optimizing evaluation metrics like ROC AUC
-- The deployed model reflects a single static training snapshot and does not retrain or adapt as new orders come in
+::: incremental
+-   Kaggle notes the dataset is "realistic" rather than verified, meaning it is likely **synthetic** — findings may not generalize to real Shopify transaction data
+-   Findings are scoped to this dataset's countries, categories, and date range (Jan 2023–Jun 2025) and may not generalize beyond it
+-   Each Analytics Objective models its outcome independently — none of the five models account for interactions *across* objectives (e.g., a channel's effect on both satisfaction and return risk together)
+-   Several models (e.g., AO3's return prediction) face class imbalance, which caps achievable sensitivity even after optimizing evaluation metrics like ROC AUC
+-   The deployed model reflects a single static training snapshot and does not retrain or adapt as new orders come in
 :::
-:::
+::::
 
-::: {.column width="50%"}
+:::: {.column width="50%"}
 ### Future Research
 
-::: {.incremental}
-- Validate findings against real, non-synthetic transaction data before informing operational decisions
-- Build an integrated model connecting acquisition, satisfaction, returns, and retention rather than five separate models, to capture cross-objective interactions
-- Extend the population beyond the current
+::: incremental
+-   Validate findings against real, non-synthetic transaction data before informing operational decisions
+-   Build an integrated model connecting acquisition, satisfaction, returns, and retention rather than five separate models, to capture cross-objective interactions
+-   Extend the population beyond the current
+:::
+::::
+:::::::
 
 # Appendix
 

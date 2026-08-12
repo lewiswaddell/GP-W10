@@ -1,0 +1,624 @@
+@charset "UTF-8";
+/*-- scss:defaults --*/
+/*----------------------------------------
+  2. RULES
+----------------------------------------*/
+/*-- scss:rules --*/
+.reveal {
+  font-family: "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
+  color: #121212 !important;
+  font-size: 37px;
+  font-weight: 400;
+  line-height: 1.48;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  /* The Shopify-inspired treatment now covers the full slide canvas. */
+  /* Content slides sit in a warm, high-contrast information panel. */
+  /* Optional panel utility for columns, summaries, and key findings. */
+  /* Title content lives directly on the full-slide background—not in a card. */
+  /* Strong, deliberate header hierarchy. */
+  /* Existing font-size utility selectors preserved. */
+}
+
+.reveal .slide-background {
+  background-color: #004C3F !important;
+  background-image: radial-gradient(circle at 92% 8%, rgba(149, 191, 71, 0.3), transparent 24%), radial-gradient(circle at 8% 100%, rgba(255, 184, 28, 0.11), transparent 26%), linear-gradient(145deg, #002E25 0%, #004C3F 62%, #006B57 100%);
+}
+
+.reveal .slide-background::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none;
+}
+
+.reveal .slides section {
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.reveal .slides > section:not(.stack):not(#title-slide),
+.reveal .slides > section.stack > section.present {
+  padding: 1.12em 1.35em 1em;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(247, 245, 239, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-left: 0.22em solid #95BF47;
+  border-radius: 0.95rem;
+  box-shadow: 0 0.65rem 1.8rem rgba(18, 18, 18, 0.2);
+  overflow: hidden;
+}
+
+.reveal .slides > section:not(.stack):not(#title-slide)::before,
+.reveal .slides > section.stack > section.present::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 7.5em;
+  height: 0.18em;
+  background: linear-gradient(90deg, #95BF47, #FFB81C);
+}
+
+/* Center information panels without making every slide scrollable. */
+.reveal .slides > section.present:not(.stack):not(#title-slide),
+.reveal .slides > section.stack.present > section.present {
+  top: 50% !important;
+  height: auto !important;
+  max-height: none;
+  transform: translateY(-50%) !important;
+  overflow: hidden;
+}
+
+/* Reveal vertical stacks must remain layout-only containers. */
+.reveal .slides > section.stack {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+
+/* Prevent inactive H1/H2 vertical slides from leaking panels or shadows. */
+.reveal .slides > section.stack > section:not(.present) {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.reveal .slides > section.stack > section:not(.present)::before {
+  content: none;
+}
+
+/* Scroll only slides explicitly marked {.scrollable}. */
+.reveal .slides section.scrollable.present:not(#title-slide) {
+  max-height: calc(100% - 1.2em);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.reveal .content-panel,
+.reveal .panel {
+  margin: 0.65em 0;
+  padding: 0.8em 0.95em;
+  color: #002E25;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 76, 63, 0.17);
+  border-radius: 0.65rem;
+  box-shadow: 0 0.22rem 0.7rem rgba(18, 18, 18, 0.08);
+}
+
+.reveal #title-slide {
+  position: relative;
+  display: flex !important;
+  min-height: 560px;
+  box-sizing: border-box;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 1.2em 1.4em;
+  color: #FFFFFF !important;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.reveal #title-slide::before {
+  content: "SHOPIFY DATA STUDY";
+  display: inline-block;
+  margin-bottom: 1.2em;
+  padding: 0.34em 0.68em;
+  color: #002E25;
+  background: #95BF47;
+  border-radius: 999px;
+  font-family: "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 0.52em;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+}
+
+.reveal #title-slide::after {
+  content: "";
+  position: absolute;
+  right: 0.8em;
+  bottom: 0.6em;
+  width: 7.5em;
+  height: 7.5em;
+  border: 0.48em solid rgba(149, 191, 71, 0.18);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.reveal #title-slide h1.title {
+  position: relative;
+  z-index: 1;
+  max-width: 9.8em;
+  margin: 0 0 0.3em;
+  color: #FFFFFF !important;
+  font-size: 2.8em;
+  font-weight: 850;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+
+.reveal #title-slide h1.title::after {
+  content: "";
+  display: block;
+  width: 1.45em;
+  height: 0.085em;
+  margin-top: 0.32em;
+  background: linear-gradient(90deg, #95BF47 0 72%, #FFB81C 72% 100%);
+  border-radius: 999px;
+}
+
+.reveal #title-slide .subtitle {
+  position: relative;
+  z-index: 1;
+  max-width: 28em;
+  margin: 0 0 1.1em;
+  color: #D8EBC2 !important;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.08em;
+  font-style: italic;
+  line-height: 1.38;
+}
+
+.reveal #title-slide .quarto-title-author,
+.reveal #title-slide .quarto-title-authors,
+.reveal #title-slide .date,
+.reveal #title-slide p {
+  position: relative;
+  z-index: 1;
+  color: rgba(255, 255, 255, 0.86) !important;
+}
+
+.reveal #title-slide .quarto-title-author,
+.reveal #title-slide .quarto-title-authors,
+.reveal #title-slide .date {
+  font-size: 0.76em;
+  letter-spacing: 0.025em;
+}
+
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+  margin: 0 0 0.48em;
+  font-family: "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.reveal h1 {
+  color: #002E25 !important;
+  font-size: 2.6em;
+  font-weight: 850;
+  letter-spacing: -0.05em;
+}
+
+.reveal h2 {
+  color: #004C3F !important;
+  font-size: 2em;
+  font-weight: 825;
+  letter-spacing: -0.04em;
+}
+
+.reveal h2::after {
+  content: "";
+  display: block;
+  width: 1.8em;
+  height: 0.095em;
+  margin-top: 0.24em;
+  background: linear-gradient(90deg, #95BF47 0 72%, #FFB81C 72% 100%);
+  border-radius: 999px;
+}
+
+.reveal h3 {
+  color: #004C3F !important;
+  font-size: 1.55em;
+  font-weight: 775;
+  letter-spacing: -0.025em;
+}
+
+.reveal h4 {
+  color: #00838A !important;
+  font-size: 1.28em;
+  font-weight: 750;
+  letter-spacing: -0.015em;
+}
+
+.reveal h5 {
+  color: #53645F !important;
+  font-size: 1.05em;
+  font-weight: 725;
+}
+
+.reveal h6 {
+  color: #53645F !important;
+  font-size: 0.86em;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.reveal p {
+  max-width: 42em;
+  margin: 0 0 0.78em;
+  color: #121212 !important;
+  font-size: 1em;
+  line-height: 1.55;
+}
+
+.reveal strong {
+  color: #004C3F;
+  font-weight: 750;
+}
+
+.reveal a {
+  color: #00838A !important;
+  font-weight: 650;
+  text-decoration: underline;
+  text-decoration-color: rgba(0, 131, 138, 0.36);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.14em;
+  transition: color 150ms ease, text-decoration-color 150ms ease;
+}
+
+.reveal a:hover {
+  color: #FF7500 !important;
+  text-decoration-color: currentColor;
+}
+
+.reveal a:focus-visible {
+  color: #004C3F !important;
+  outline: 0.12em solid rgba(149, 191, 71, 0.62);
+  outline-offset: 0.12em;
+  border-radius: 0.08em;
+}
+
+.reveal a:active {
+  color: #b52b4c !important;
+}
+
+.reveal blockquote {
+  width: auto;
+  margin: 0.85em 0;
+  padding: 0.72em 0.95em;
+  color: #53645F;
+  background: linear-gradient(90deg, rgba(149, 191, 71, 0.18), #FFFFFF);
+  border: 1px solid rgba(0, 76, 63, 0.17);
+  border-left: 0.25em solid #95BF47;
+  border-radius: 0 0.65rem 0.65rem 0;
+  box-shadow: 0 0.18rem 0.6rem rgba(18, 18, 18, 0.07);
+}
+
+.reveal blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.reveal .controls {
+  color: #95BF47 !important;
+}
+
+.reveal .controls button {
+  transition: color 150ms ease, transform 150ms ease;
+}
+
+.reveal .controls button:hover, .reveal .controls button:focus-visible {
+  color: #FFB81C;
+  filter: drop-shadow(0 0.08em 0.14em rgba(18, 18, 18, 0.3));
+}
+
+.reveal .controls button:focus-visible {
+  outline: 2px solid #FFFFFF;
+  outline-offset: 2px;
+}
+
+.reveal .controls button:active {
+  transform: scale(0.94);
+}
+
+.reveal .progress {
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+.reveal .progress span {
+  background: linear-gradient(90deg, #95BF47, #FFB81C) !important;
+  box-shadow: 0 0 0.38rem rgba(149, 191, 71, 0.45);
+}
+
+.reveal pre {
+  width: 100%;
+  margin: 0.75em 0;
+  border: 1px solid rgba(149, 191, 71, 0.52);
+  border-radius: 0.65rem;
+  box-shadow: 0 0.35rem 1rem rgba(18, 18, 18, 0.15);
+  overflow: hidden;
+}
+
+.reveal pre code {
+  display: block;
+  box-sizing: border-box;
+  max-height: 23em;
+  padding: 0.95em 1.05em;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #002E25, #004C3F);
+  border: 0;
+  border-radius: 0;
+  font-size: 0.8em;
+  line-height: 1.5;
+  tab-size: 2;
+}
+
+.reveal :not(pre) > code {
+  padding: 0.12em 0.32em;
+  color: #004C3F;
+  background: #D8EBC2;
+  border: 1px solid rgba(0, 76, 63, 0.17);
+  border-radius: 0.25rem;
+  font-size: 0.88em;
+}
+
+.reveal .slides section ul {
+  margin: 0.42em 0 0.75em 1.12em;
+  padding-left: 0.34em;
+  color: #121212;
+  font-size: 1em;
+  line-height: 1.45;
+  list-style-type: disc;
+}
+
+.reveal .slides section ul li {
+  margin: 0.28em 0;
+  padding-left: 0.18em;
+}
+
+.reveal .slides section ul li::marker {
+  color: #95BF47;
+}
+
+.reveal .slides section ul ul {
+  margin: 0.22em 0 0.22em 1.08em;
+  color: #53645F;
+  font-size: 0.9em;
+  list-style-type: square;
+}
+
+.reveal .slides section ul ul li::marker {
+  color: #004C3F;
+}
+
+.reveal .slides section ul ul ul {
+  margin-left: 1.04em;
+  font-size: 0.88em;
+  list-style-type: circle;
+}
+
+.reveal .slides section ul ul ul li::marker {
+  color: #FFB81C;
+}
+
+.reveal ol {
+  margin: 0.42em 0 0.75em 1.32em;
+}
+
+.reveal ol li {
+  margin: 0.28em 0;
+  padding-left: 0.18em;
+}
+
+.reveal ol li::marker {
+  color: #004C3F;
+  font-weight: 800;
+}
+
+.reveal table {
+  margin: 0.75em auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid rgba(0, 76, 63, 0.17);
+  border-radius: 0.65rem;
+  box-shadow: 0 0.24rem 0.8rem rgba(18, 18, 18, 0.1);
+  overflow: hidden;
+}
+
+.reveal table th, .reveal table td {
+  padding: 0.46em 0.65em;
+  border-bottom: 1px solid rgba(0, 76, 63, 0.17);
+}
+
+.reveal table td {
+  color: #002E25 !important;
+  background-color: rgba(255, 255, 255, 0.82);
+}
+
+.reveal table td strong {
+  color: #004C3F !important;
+  font-weight: 800;
+}
+
+.reveal table th {
+  color: #FFFFFF;
+  background: linear-gradient(90deg, #002E25, #004C3F);
+  font-weight: 750;
+  letter-spacing: 0.015em;
+}
+
+.reveal table tr:nth-child(even) td {
+  color: #002E25 !important;
+  background: rgba(149, 191, 71, 0.12);
+}
+
+.reveal table tr:last-child td {
+  border-bottom: 0;
+}
+
+.reveal .highlight {
+  display: inline;
+  padding: 0.14em 0.4em;
+  color: #002E25;
+  background: #95BF47;
+  border-radius: 0.25rem;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  box-shadow: inset 0 -0.08em 0 rgba(0, 76, 63, 0.25);
+}
+
+.reveal .slide-logo {
+  right: 18px !important;
+  bottom: 14px !important;
+  width: 140px !important;
+  height: auto !important;
+  max-height: none !important;
+  opacity: 0.96;
+  filter: drop-shadow(0 0.08rem 0.14rem rgba(18, 18, 18, 0.26));
+}
+
+.reveal .small {
+  font-size: 0.75em;
+}
+
+.reveal .medium-small {
+  font-size: 0.875em;
+}
+
+.reveal .large-small {
+  font-size: 1em;
+}
+
+.reveal .small-medium {
+  font-size: 1.125em;
+}
+
+.reveal .medium {
+  font-size: 1.25em;
+}
+
+.reveal .large-medium {
+  font-size: 1.375em;
+}
+
+.reveal .small-large {
+  font-size: 1.5em;
+}
+
+.reveal .medium-large {
+  font-size: 1.625em;
+}
+
+.reveal .large {
+  font-size: 1.75em;
+}
+
+/* Automatically mount slide images on a contrasting panel. */
+.reveal .slides section img:not(.slide-logo):not(.plain-image),
+.reveal .slides section .image-panel {
+  display: block;
+  box-sizing: border-box;
+  max-width: 100%;
+  height: auto;
+  padding: 0.35em;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 76, 63, 0.17);
+  border-radius: 0.65rem;
+  box-shadow: 0 0.3rem 0.9rem rgba(18, 18, 18, 0.14);
+}
+
+.reveal .slides section figure {
+  margin: 0.7em auto;
+}
+
+.reveal .slides section figcaption {
+  margin-top: 0.35em;
+  color: #53645F;
+  font-size: 0.68em;
+  line-height: 1.35;
+  text-align: center;
+}
+
+/* Opt out with: ![](image.png){.plain-image} */
+.reveal .slides section img.plain-image {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Keep Quarto callouts compact enough for presentation layouts. */
+.reveal .callout {
+  margin: 0.65em 0;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+  border-radius: 0.65rem;
+  box-shadow: 0 0.18rem 0.55rem rgba(18, 18, 18, 0.08);
+}
+
+.reveal .callout .callout-header {
+  padding: 0.36em 0.6em;
+  font-size: 0.78em;
+  font-weight: 750;
+}
+
+.reveal .callout .callout-body {
+  padding: 0.48em 0.68em;
+  height: auto;
+  max-height: none;
+  overflow: visible;
+  font-size: 0.78em;
+  line-height: 1.4;
+}
+
+.reveal .callout .callout-content {
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+.reveal .callout .callout-body > :last-child {
+  margin-bottom: 0;
+}
+
+/* Existing animation name preserved. */
+@keyframes progressColor {
+  0% {
+    background-color: #005030;
+  }
+  100% {
+    background-color: #95BF47;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal *,
+  .reveal *::before,
+  .reveal *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
