@@ -8,15 +8,55 @@ format:
     slide-number: true
     scrollable: true
     controls: true
-    width: 1280
-    height: 720
-    margin: 0.5
+    width: 2500
+    height: 1000
+    margin: 0.4
     min-scale: 0.2
-    max-scale: .80
+    max-scale: 1
 footer: "IBM6540 | August 12, 2026"
 ---
 
 # Table of Contents
+
+:::::: columns
+::: {.column width="30%"}
+[**Introduction**]{.underline}
+
+-   Problem definition
+
+-   Research objectives
+
+-   Importance of the research
+
+-   Population / Sample
+
+-   Sample Characteristics
+:::
+
+::: {.column width="30%"}
+[**Research**]{.underline}
+
+-   Analytics Objective 1
+
+-   Analytics Objective 2
+
+-   Analytics Objective 3
+
+-   Analytics Objective 4
+
+-   Analytics Objective 5
+:::
+
+::: {.column width="30%"}
+[**Conclusion**]{.underline}
+
+-   Key Findings
+
+-   Recommendations for Businesses
+
+-   Limitations and Directions for Future Research
+:::
+::::::
 
 # Introduction
 
