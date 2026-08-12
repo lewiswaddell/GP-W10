@@ -10,7 +10,7 @@ format:
     controls: true
     width: 1280
     height: 720
-    margin: 0.2
+    margin: 0.5
     min-scale: 0.2
     max-scale: .80
 footer: "IBM6540 | August 12, 2026"
