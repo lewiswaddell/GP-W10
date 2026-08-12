@@ -4,7 +4,7 @@ subtitle: "Final Report"
 author: "**Group 2:** <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen Sabilla, Brian Vuong"
 format:
   revealjs: 
-    theme: [default, cpptheme.scss]
+    theme: [default, shopifytheme2.scss]
     slide-number: true
     scrollable: true
     controls: true
@@ -140,8 +140,8 @@ footer: "IBM6540 | August 12, 2026"
 
 # Appendix
 
--   GitHub Repo
+-   [GitHub Repo](https://github.com/lewiswaddell/GP-W10.git)
 
--   Presentation Slides
+-   [Presentation Slides](https://lewiswaddell.github.io/GP-W10/)
 
 -   Deployed Model and URL (Shiny App or Vertiver)
