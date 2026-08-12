@@ -94,7 +94,21 @@ editor:
 -   **The Goal:** Build an ML framework to optimize marketing spend,
     predict return probability, and maximize net profit margins
 
--   Research objectives
+------------------------------------------------------------------------
+
+# Research Objectives
+
+This study uses machine learning to examine the major factors affecting profitability, customer behavior, and business performance in Shopify e-commerce transactions.
+
+- **AO1 – Marketing Channel Performance:** Predict average order value (AOV) using traffic source and product category to identify the highest-value channel × category combinations.
+
+- **AO2 – Customer Satisfaction:** Examine how product, pricing, discount, and purchasing characteristics relate to customer ratings and satisfaction.
+
+- **AO3 – Product Returns:** Predict the likelihood of a product return using product category, discount percentage, shipping cost, and customer rating.
+
+- **AO4 – Customer Value:** Predict whether a new customer will become a high-value customer using information available from their first purchase.
+
+- **AO5 – Seasonality:** Analyze changes in sales performance over time to identify seasonal patterns that can support forecasting and marketing decisions.
 
 # Importance of the Research
 
@@ -330,24 +344,410 @@ rf_fit |>
 
 # Analytics Objective 2
 
--   Machine learning methods to be used
+Predict **customer satisfaction (`rating`)** using product category, product price, discount percentage, shipping cost, and traffic source.
 
-    -   Regression-Focused Methods
+**Goal:** Identify which order and marketing characteristics are most useful for predicting customer ratings.
 
-    -   Classification-Focused Methods
+# Machine Learning Methods
 
-    -   Ensembles
+- **Regression-Focused:** Linear Regression
+- **Classification-Focused:** Not used because `rating` is treated as a continuous outcome
+- **Ensembles:** Random Forest and XGBoost
+- Models are compared using held-out test-set **RMSE, MAE, and R²**
 
--   Data wrangling & visualization
+```{r ao2-setup}
+#| include: false
+#| message: false
+#| warning: false
 
--   Model fitting (including Data splitting, recipe creation, & model
-    specification)
+library(tidyverse)
+library(tidymodels)
+library(ranger)
+library(xgboost)
 
--   Prediction and model evaluation
+set.seed(2026)
 
--   Interpretation (e.g., Variable importance, PDP, SHAP values, etc.)
+df_ao2 <- df |>
+  select(
+    rating,
+    product_category,
+    product_price,
+    discount_percent,
+    shipping_cost,
+    traffic_source
+  ) |>
+  filter(
+    !is.na(rating),
+    rating >= 1,
+    rating <= 5
+  ) |>
+  mutate(
+    product_category = factor(product_category),
+    traffic_source = factor(traffic_source)
+  )
+```
 
--   Summary Findings
+# Data Wrangling & Visualization
+
+- Keep customer `rating` as the continuous outcome
+- Use product category, price, discount, shipping cost, and traffic source as predictors
+- Remove observations without valid ratings
+- Convert categorical predictors to factors
+- Compare average customer ratings across product categories
+
+```{r ao2-visualization}
+#| echo: false
+#| fig-width: 9
+#| fig-height: 4.5
+
+ao2_category_summary <- df_ao2 |>
+  group_by(product_category) |>
+  summarise(
+    mean_rating = mean(rating, na.rm = TRUE),
+    n = n(),
+    .groups = "drop"
+  ) |>
+  arrange(desc(mean_rating))
+
+ao2_category_summary |>
+  ggplot(
+    aes(
+      x = reorder(product_category, mean_rating),
+      y = mean_rating
+    )
+  ) +
+  geom_col(fill = "#154734", alpha = 0.85) +
+  geom_text(
+    aes(label = round(mean_rating, 2)),
+    hjust = -0.15,
+    size = 4
+  ) +
+  coord_flip() +
+  scale_y_continuous(
+    limits = c(0, 5.2),
+    breaks = 0:5
+  ) +
+  labs(
+    title = "Average Customer Rating by Product Category",
+    x = "Product Category",
+    y = "Average Rating"
+  ) +
+  theme_minimal(base_size = 12)
+```
+
+# Model Fitting
+
+- **80/20 train-test split**, stratified by customer rating
+- Missing numeric values are median-imputed
+- Missing categorical values are assigned an `"Unknown"` category
+- Categorical predictors are dummy encoded
+- Three models are compared:
+  - Linear Regression
+  - Random Forest
+  - XGBoost
+
+```{r ao2-model-fitting}
+#| include: false
+#| message: false
+#| warning: false
+#| cache: true
+
+set.seed(2026)
+
+ao2_split <- initial_split(
+  df_ao2,
+  prop = 0.80,
+  strata = rating
+)
+
+ao2_train <- training(ao2_split)
+ao2_test <- testing(ao2_split)
+
+ao2_recipe <- recipe(
+  rating ~ product_category +
+    product_price +
+    discount_percent +
+    shipping_cost +
+    traffic_source,
+  data = ao2_train
+) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_unknown(all_nominal_predictors()) |>
+  step_dummy(all_nominal_predictors(), one_hot = TRUE) |>
+  step_zv(all_predictors())
+
+ao2_lm_spec <- linear_reg() |>
+  set_engine("lm")
+
+ao2_rf_spec <- rand_forest(
+  trees = 200,
+  mtry = 3,
+  min_n = 5
+) |>
+  set_engine(
+    "ranger",
+    importance = "impurity"
+  ) |>
+  set_mode("regression")
+
+ao2_xgb_spec <- boost_tree(
+  trees = 200,
+  tree_depth = 6,
+  learn_rate = 0.05,
+  min_n = 5
+) |>
+  set_engine("xgboost") |>
+  set_mode("regression")
+
+ao2_lm_wf <- workflow() |>
+  add_recipe(ao2_recipe) |>
+  add_model(ao2_lm_spec)
+
+ao2_rf_wf <- workflow() |>
+  add_recipe(ao2_recipe) |>
+  add_model(ao2_rf_spec)
+
+ao2_xgb_wf <- workflow() |>
+  add_recipe(ao2_recipe) |>
+  add_model(ao2_xgb_spec)
+
+ao2_lm_fit <- fit(
+  ao2_lm_wf,
+  data = ao2_train
+)
+
+ao2_rf_fit <- fit(
+  ao2_rf_wf,
+  data = ao2_train
+)
+
+ao2_xgb_fit <- fit(
+  ao2_xgb_wf,
+  data = ao2_train
+)
+```
+
+# Prediction & Model Evaluation
+
+Models are evaluated on the **held-out 20% test sample**.
+
+- **RMSE:** Lower is better
+- **MAE:** Lower is better
+- **R²:** Higher is better
+
+```{r ao2-evaluation}
+#| echo: false
+#| message: false
+#| warning: false
+#| cache: true
+
+ao2_metrics_function <- metric_set(
+  rmse,
+  mae,
+  rsq
+)
+
+ao2_lm_predictions <- augment(
+  ao2_lm_fit,
+  new_data = ao2_test
+)
+
+ao2_rf_predictions <- augment(
+  ao2_rf_fit,
+  new_data = ao2_test
+)
+
+ao2_xgb_predictions <- augment(
+  ao2_xgb_fit,
+  new_data = ao2_test
+)
+
+ao2_metrics <- bind_rows(
+
+  ao2_lm_predictions |>
+    ao2_metrics_function(
+      truth = rating,
+      estimate = .pred
+    ) |>
+    mutate(model = "Linear Regression"),
+
+  ao2_rf_predictions |>
+    ao2_metrics_function(
+      truth = rating,
+      estimate = .pred
+    ) |>
+    mutate(model = "Random Forest"),
+
+  ao2_xgb_predictions |>
+    ao2_metrics_function(
+      truth = rating,
+      estimate = .pred
+    ) |>
+    mutate(model = "XGBoost")
+
+) |>
+  select(model, .metric, .estimate)
+
+ao2_metrics |>
+  mutate(.estimate = round(.estimate, 3)) |>
+  pivot_wider(
+    names_from = .metric,
+    values_from = .estimate
+  ) |>
+  knitr::kable(
+    col.names = c(
+      "Model",
+      "MAE",
+      "RMSE",
+      "R²"
+    ),
+    caption = "AO2 Model Performance on Held-Out Test Data"
+  )
+```
+
+# Model Comparison
+
+```{r ao2-model-comparison}
+#| echo: false
+#| fig-width: 9
+#| fig-height: 4.5
+
+ao2_metrics |>
+  filter(.metric == "rmse") |>
+  ggplot(
+    aes(
+      x = reorder(model, .estimate),
+      y = .estimate
+    )
+  ) +
+  geom_col(fill = "#154734", alpha = 0.85) +
+  geom_text(
+    aes(label = round(.estimate, 3)),
+    hjust = -0.15,
+    size = 4
+  ) +
+  coord_flip() +
+  labs(
+    title = "Customer Rating Prediction — Model Comparison",
+    subtitle = "Lower RMSE indicates better predictive performance",
+    x = NULL,
+    y = "Test RMSE"
+  ) +
+  theme_minimal(base_size = 12)
+```
+
+# Interpretation
+
+Random Forest variable importance is used to identify which predictors contribute most strongly to customer-rating predictions.
+
+```{r ao2-importance}
+#| echo: false
+#| fig-width: 9
+#| fig-height: 4.5
+#| cache: true
+
+ao2_rf_engine <- ao2_rf_fit |>
+  extract_fit_engine()
+
+ao2_importance <- tibble(
+  Variable = names(
+    ao2_rf_engine$variable.importance
+  ),
+  Importance = as.numeric(
+    ao2_rf_engine$variable.importance
+  )
+) |>
+  arrange(desc(Importance))
+
+ao2_importance |>
+  slice_head(n = 10) |>
+  ggplot(
+    aes(
+      x = reorder(Variable, Importance),
+      y = Importance
+    )
+  ) +
+  geom_col(fill = "#154734", alpha = 0.85) +
+  coord_flip() +
+  labs(
+    title = "Random Forest Variable Importance — Customer Satisfaction",
+    x = "Predictor",
+    y = "Importance"
+  ) +
+  theme_minimal(base_size = 12)
+```
+
+```{r ao2-summary-values}
+#| include: false
+
+ao2_best_model <- ao2_metrics |>
+  filter(.metric == "rmse") |>
+  slice_min(
+    .estimate,
+    n = 1,
+    with_ties = FALSE
+  ) |>
+  pull(model)
+
+ao2_best_rmse <- ao2_metrics |>
+  filter(
+    model == ao2_best_model,
+    .metric == "rmse"
+  ) |>
+  pull(.estimate)
+
+ao2_best_mae <- ao2_metrics |>
+  filter(
+    model == ao2_best_model,
+    .metric == "mae"
+  ) |>
+  pull(.estimate)
+
+ao2_best_rsq <- ao2_metrics |>
+  filter(
+    model == ao2_best_model,
+    .metric == "rsq"
+  ) |>
+  pull(.estimate)
+
+ao2_top_feature <- ao2_importance |>
+  slice_max(
+    Importance,
+    n = 1,
+    with_ties = FALSE
+  ) |>
+  pull(Variable)
+
+ao2_top_category <- ao2_category_summary |>
+  slice_max(
+    mean_rating,
+    n = 1,
+    with_ties = FALSE
+  ) |>
+  pull(product_category)
+
+ao2_top_category_rating <- ao2_category_summary |>
+  slice_max(
+    mean_rating,
+    n = 1,
+    with_ties = FALSE
+  ) |>
+  pull(mean_rating)
+```
+
+# Summary Findings
+
+- **Best Model:** `r ao2_best_model`
+- **Test RMSE:** `r round(ao2_best_rmse, 3)`
+- **Test MAE:** `r round(ao2_best_mae, 3)`
+- **Test R²:** `r round(ao2_best_rsq, 3)`
+- **Most Important Predictor:** `r ao2_top_feature`
+- **Highest-Rated Product Category:** `r ao2_top_category`
+- **Average Rating:** `r round(ao2_top_category_rating, 2)` out of 5
+
+`r if (ao2_best_rsq < 0.10) "Overall predictive strength is weak, suggesting that customer satisfaction depends heavily on factors not captured in the current dataset." else if (ao2_best_rsq < 0.30) "The models show modest predictive power, suggesting that the available transaction characteristics explain some, but not most, variation in customer satisfaction." else "The models demonstrate meaningful predictive ability using the available transaction characteristics."`
+
+Businesses should use these predictors as **diagnostic signals rather than causal evidence** when evaluating customer satisfaction.
 
 # Analytics Objective 3
 
@@ -784,7 +1184,25 @@ lda_preds |>
     purchasing, discounts, and seasonality together provide a more
     complete picture of business performance **:::**
 
--   Recommendations for Businesses
+# Recommendations for Businesses
+
+- **Optimize marketing spending by channel and product category**
+  - Evaluate traffic sources based on customer value and profitability rather than transaction volume alone.
+  - Shift spending toward the channel × category combinations producing the strongest results.
+
+- **Use customer satisfaction as an early performance signal**
+  - Monitor customer ratings alongside pricing, discounts, and product information to identify areas where the customer experience can be improved.
+
+- **Reduce preventable return-related costs**
+  - Closely monitor shipping costs and discount levels when evaluating return risk.
+  - Use return-risk models as an early-warning tool rather than relying only on historical return reports.
+
+- **Identify high-value customers earlier**
+  - Use first-order purchase characteristics to score customers by their probability of becoming high-value.
+  - Prioritize higher-potential customers for retention campaigns and personalized offers.
+
+- **Plan around seasonal demand**
+  - Incorporate seasonal sales patterns into inventory, promotional, and marketing planning instead of treating demand as constant throughout the year.
 
 # Limitations and Directions for Future Research
 

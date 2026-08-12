@@ -189,7 +189,17 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 <li><p><strong>Margin Compression:</strong> Heavy discounts (<code>discount_percent</code>) drive volume (<code>quantity</code>) but cannibalize net <code>profit</code> per order</p></li>
 <li><p><strong>Logistical Drain:</strong> Returns (<code>is_returned</code>) create operational bottlenecks and sunk costs through absorbed <code>shipping_cost</code> overhead</p></li>
 <li><p><strong>The Goal:</strong> Build an ML framework to optimize marketing spend, predict return probability, and maximize net profit margins</p></li>
-<li><p>Research objectives</p></li>
+</ul>
+</section>
+<section id="research-objectives" class="slide level1">
+<h1>Research Objectives</h1>
+<p>This study uses machine learning to examine the major factors affecting profitability, customer behavior, and business performance in Shopify e-commerce transactions.</p>
+<ul>
+<li><p><strong>AO1 – Marketing Channel Performance:</strong> Predict average order value (AOV) using traffic source and product category to identify the highest-value channel × category combinations.</p></li>
+<li><p><strong>AO2 – Customer Satisfaction:</strong> Examine how product, pricing, discount, and purchasing characteristics relate to customer ratings and satisfaction.</p></li>
+<li><p><strong>AO3 – Product Returns:</strong> Predict the likelihood of a product return using product category, discount percentage, shipping cost, and customer rating.</p></li>
+<li><p><strong>AO4 – Customer Value:</strong> Predict whether a new customer will become a high-value customer using information available from their first purchase.</p></li>
+<li><p><strong>AO5 – Seasonality:</strong> Analyze changes in sales performance over time to identify seasonal patterns that can support forecasting and marketing decisions.</p></li>
 </ul>
 </section>
 <section id="importance-of-the-research" class="slide level1">
@@ -291,7 +301,8 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 <li>One-hot encode channel &amp; category; bin AOV into tiers</li>
 <li>Boxplots by channel, heatmap of mean AOV across channel × category</li>
 </ul>
-</section>
+
+<img data-src="6540GPW10-Group2-Presentation_files/figure-revealjs/ao1-heatmap-1.png" width="864" class="r-stretch"></section>
 <section class="slide level1">
 
 <h2 id="model-fitting">Model Fitting</h2>
@@ -309,7 +320,8 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 <li><strong>Classification:</strong> Accuracy · F1 · ROC-AUC · Confusion Matrix</li>
 <li>Select best model per task; evaluate on held-out test set</li>
 </ul>
-</section>
+
+<img data-src="6540GPW10-Group2-Presentation_files/figure-revealjs/ao1-eval-1.png" width="864" class="r-stretch"></section>
 <section class="slide level1">
 
 <h2 id="interpretation">Interpretation</h2>
@@ -319,7 +331,8 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 <li>SHAP → per-order prediction breakdown</li>
 <li>Interaction heatmap → predicted AOV for every channel × category pair</li>
 </ul>
-</section>
+
+<img data-src="6540GPW10-Group2-Presentation_files/figure-revealjs/ao1-vip-1.png" width="864" class="r-stretch"></section>
 <section class="slide level1">
 
 <h2 id="summary-findings">Summary Findings</h2>
@@ -332,19 +345,110 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 </section>
 <section id="analytics-objective-2" class="slide level1">
 <h1>Analytics Objective 2</h1>
+<p>Predict <strong>customer satisfaction (<code>rating</code>)</strong> using product category, product price, discount percentage, shipping cost, and traffic source.</p>
+<p><strong>Goal:</strong> Identify which order and marketing characteristics are most useful for predicting customer ratings.</p>
+</section>
+<section id="machine-learning-methods-1" class="slide level1">
+<h1>Machine Learning Methods</h1>
 <ul>
-<li><p>Machine learning methods to be used</p>
-<ul>
-<li><p>Regression-Focused Methods</p></li>
-<li><p>Classification-Focused Methods</p></li>
-<li><p>Ensembles</p></li>
-</ul></li>
-<li><p>Data wrangling &amp; visualization</p></li>
-<li><p>Model fitting (including Data splitting, recipe creation, &amp; model specification)</p></li>
-<li><p>Prediction and model evaluation</p></li>
-<li><p>Interpretation (e.g., Variable importance, PDP, SHAP values, etc.)</p></li>
-<li><p>Summary Findings</p></li>
+<li><strong>Regression-Focused:</strong> Linear Regression</li>
+<li><strong>Classification-Focused:</strong> Not used because <code>rating</code> is treated as a continuous outcome</li>
+<li><strong>Ensembles:</strong> Random Forest and XGBoost</li>
+<li>Models are compared using held-out test-set <strong>RMSE, MAE, and R²</strong></li>
 </ul>
+</section>
+<section id="data-wrangling-visualization-1" class="slide level1">
+<h1>Data Wrangling &amp; Visualization</h1>
+<ul>
+<li>Keep customer <code>rating</code> as the continuous outcome</li>
+<li>Use product category, price, discount, shipping cost, and traffic source as predictors</li>
+<li>Remove observations without valid ratings</li>
+<li>Convert categorical predictors to factors</li>
+<li>Compare average customer ratings across product categories</li>
+</ul>
+
+<img data-src="6540GPW10-Group2-Presentation_files/figure-revealjs/ao2-visualization-1.png" width="864" class="r-stretch"></section>
+<section id="model-fitting-1" class="slide level1">
+<h1>Model Fitting</h1>
+<ul>
+<li><strong>80/20 train-test split</strong>, stratified by customer rating</li>
+<li>Missing numeric values are median-imputed</li>
+<li>Missing categorical values are assigned an <code>"Unknown"</code> category</li>
+<li>Categorical predictors are dummy encoded</li>
+<li>Three models are compared:
+<ul>
+<li>Linear Regression</li>
+<li>Random Forest</li>
+<li>XGBoost</li>
+</ul></li>
+</ul>
+</section>
+<section id="prediction-model-evaluation-1" class="slide level1">
+<h1>Prediction &amp; Model Evaluation</h1>
+<p>Models are evaluated on the <strong>held-out 20% test sample</strong>.</p>
+<ul>
+<li><strong>RMSE:</strong> Lower is better</li>
+<li><strong>MAE:</strong> Lower is better</li>
+<li><strong>R²:</strong> Higher is better</li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top">
+<caption>AO2 Model Performance on Held-Out Test Data</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Model</th>
+<th style="text-align: right;">MAE</th>
+<th style="text-align: right;">RMSE</th>
+<th style="text-align: right;">R²</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Linear Regression</td>
+<td style="text-align: right;">1.150</td>
+<td style="text-align: right;">0.998</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Random Forest</td>
+<td style="text-align: right;">1.151</td>
+<td style="text-align: right;">0.999</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">XGBoost</td>
+<td style="text-align: right;">1.156</td>
+<td style="text-align: right;">1.001</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="model-comparison" class="slide level1">
+<h1>Model Comparison</h1>
+
+<img data-src="6540GPW10-Group2-Presentation_files/figure-revealjs/ao2-model-comparison-1.png" width="864" class="r-stretch"></section>
+<section id="interpretation-1" class="slide level1">
+<h1>Interpretation</h1>
+<p>Random Forest variable importance is used to identify which predictors contribute most strongly to customer-rating predictions.</p>
+
+<img data-src="6540GPW10-Group2-Presentation_files/figure-revealjs/ao2-importance-1.png" width="864" class="r-stretch"></section>
+<section id="summary-findings-1" class="slide level1">
+<h1>Summary Findings</h1>
+<ul>
+<li><strong>Best Model:</strong> Linear Regression</li>
+<li><strong>Test RMSE:</strong> 1.15</li>
+<li><strong>Test MAE:</strong> 0.998</li>
+<li><strong>Test R²:</strong> 0</li>
+<li><strong>Most Important Predictor:</strong> product_price</li>
+<li><strong>Highest-Rated Product Category:</strong> Electronics</li>
+<li><strong>Average Rating:</strong> 3.02 out of 5</li>
+</ul>
+<p>Overall predictive strength is weak, suggesting that customer satisfaction depends heavily on factors not captured in the current dataset.</p>
+<p>Businesses should use these predictors as <strong>diagnostic signals rather than causal evidence</strong> when evaluating customer satisfaction.</p>
 </section>
 <section id="analytics-objective-3" class="slide level1">
 <h1>Analytics Objective 3</h1>
@@ -352,7 +456,7 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 </section>
 <section class="slide level1">
 
-<h2 id="machine-learning-methods-1">Machine Learning Methods</h2>
+<h2 id="machine-learning-methods-2">Machine Learning Methods</h2>
 <ul>
 <li><strong>Regression:</strong> Logistic Regression <em>(binary outcome)</em></li>
 <li><strong>Classification:</strong> LDA, QDA, KNN, Decision Tree</li>
@@ -361,17 +465,16 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 </section>
 <section class="slide level1">
 
-<h2 id="data-wrangling-visualization-1">Data Wrangling &amp; Visualization</h2>
-<ul>
+<h2 id="data-wrangling-visualization-2">Data Wrangling &amp; Visualization</h2>
+
+<img data-src="6540GPW10-Group2-Presentation_files/figure-revealjs/return-rate-by-category-1.png" width="960" class="r-stretch"><ul>
 <li>Convert <code>is_returned</code> &amp; <code>product_category</code> to factors; confirm zero missing values</li>
 <li>Stratify splits/CV on <code>is_returned</code> — ~15% return rate (class imbalance)</li>
-<li>Bar chart: return rate by category · Scatter: discount % vs.&nbsp;profit</li>
-<li>Boxplot: rating by return status · Faceted bar: shipping cost by country</li>
 </ul>
 </section>
 <section class="slide level1">
 
-<h2 id="model-fitting-1">Model Fitting</h2>
+<h2 id="model-fitting-2">Model Fitting</h2>
 <ul>
 <li>75/25 stratified split + 3–10 fold CV</li>
 <li>Recipe: dummy-encode categoricals, zero/near-zero variance filter <em>(no normalization for trees)</em></li>
@@ -389,17 +492,34 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 </section>
 <section class="slide level1">
 
-<h2 id="interpretation-1">Interpretation</h2>
+<h2 id="interpretation-2">Interpretation</h2>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="6540GPW10-Group2-Presentation_files/figure-revealjs/shap-summary-1.png" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure>
+<p><img data-src="6540GPW10-Group2-Presentation_files/figure-revealjs/variable-importance-1.png" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
 <ul>
 <li>SHAP (<code>predict_parts()</code>) → <code>shipping_cost</code> ranks #1, ahead of <code>discount_percent</code> <em>(ranking taken with the predictive-strength caveat in Summary Findings)</em></li>
-<li>PDPs → isolated effect of discount % and shipping cost on return probability</li>
 <li>Variable importance (manual <code>ggplot2</code>, <code>xgb.importance()</code>) confirms SHAP ranking</li>
 <li>Framing: discount % &amp; shipping cost = pre-purchase levers; rating = post-purchase signal</li>
 </ul>
 </section>
 <section class="slide level1">
 
-<h2 id="summary-findings-1">Summary Findings</h2>
+<h2 id="summary-findings-2">Summary Findings</h2>
 <ul>
 <li><strong>XGBoost</strong> = top model by 10-fold CV, ROC AUC = <strong>0.509</strong> (SE ≈ 0.003) — narrowly ahead of Lasso Logistic Regression (0.505), Decision Tree (0.503), and Random Forest (0.501), though the margin is within one standard error of the runner-up, so the lead is not statistically decisive</li>
 <li><strong>Shipping cost</strong>, not discount or category, is the leading return-risk driver → diverges from original hypothesis</li>
@@ -407,10 +527,6 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 <li>Deployed as a self-contained client-side calculator for pre-purchase return-risk scoring</li>
 <li>Profit impact: On average, a <strong>returned order carries ~$87 in sunk shipping and discount cost</strong> (avg. shipping cost ≈ $13.44 + avg. discount amount ≈ $73.74) that is spent regardless of the return, with <strong>no offsetting revenue retained</strong>. Applied across the 8,887 returned orders (14.8% of the 60,000-order dataset), this represents roughly <strong>$775K in aggregate sunk cost</strong> tied to returns. Notably, raw profit-per-order is nearly identical between returned ($974.81) and kept ($981.58) orders — the ~$6.77 gap is small, reinforcing that return risk in this dataset is not driven by a large per-order profit penalty on its own, but by the compounding volume of returns at scale. This closes the loop on the opening objective: even a modest per-order sunk cost becomes a meaningful margin drain in aggregate, which is exactly the kind of pattern a pre-purchase risk-scoring calculator (Section 2.2) is designed to intercept before shipping and discount costs are locked in.</li>
 </ul>
-</section>
-<section class="slide level1">
-
-<h2 id="summary-findings-2">Summary Findings</h2>
 <div title="On model selection">
 <div class="callout callout-note callout-titled callout-style-default">
 <div class="callout-body">
@@ -446,7 +562,7 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 <h1>Analytics Objective 4</h1>
 <p>Predict whether a new customer will become <strong>high-value</strong> (top-quartile lifetime profit) from their first order’s <code>product_price</code> and <code>discount_percent</code>, so the business can flag high-potential customers before their full purchase history accumulates.</p>
 </section>
-<section id="machine-learning-methods-2" class="slide level1">
+<section id="machine-learning-methods-3" class="slide level1">
 <h1>Machine Learning Methods</h1>
 <ul>
 <li>Classification: LDA (primary), QDA &amp; Naïve Bayes tested for comparison</li>
@@ -454,7 +570,7 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 <li>Regression: not used — outcome is binary (<code>high_value</code>), not continuous</li>
 </ul>
 </section>
-<section id="data-wrangling-visualization-2" class="slide level1">
+<section id="data-wrangling-visualization-3" class="slide level1">
 <h1>Data Wrangling &amp; Visualization</h1>
 <ul>
 <li>Aggregate to customer level; derive <code>cumulative_profit</code> = sum of <code>profit</code> per <code>customer_id</code></li>
@@ -464,13 +580,13 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 <li>Scatterplot: price vs.&nbsp;cumulative profit, colored by <code>high_value</code> · Boxplot: discount % by <code>high_value</code> status</li>
 </ul>
 </section>
-<section id="data-wrangling-visualization-3" class="slide level1">
+<section id="data-wrangling-visualization-4" class="slide level1">
 <h1>Data Wrangling &amp; Visualization</h1>
 
 <img data-src="6540GPW10-Group2-Presentation_files/figure-revealjs/fig-ao4-wrangling-1.png" width="960" class="r-stretch quarto-figure-center" id="fig-ao4-wrangling"><p class="caption">
 Figure&nbsp;1: First-order price and discount by customer value
 </p></section>
-<section id="model-fitting-2" class="slide level1">
+<section id="model-fitting-3" class="slide level1">
 <h1>Model Fitting</h1>
 <ul>
 <li>80/20 stratified split on <code>high_value</code> (class balance preserved by construction, ~25/75)</li>
@@ -478,7 +594,7 @@ Figure&nbsp;1: First-order price and discount by customer value
 <li>No tuning parameters for LDA; <code>mtry</code>/<code>trees</code> left at tidymodels defaults for Random Forest (baseline comparison only, not the deployed model)</li>
 </ul>
 </section>
-<section id="model-fitting-3" class="slide level1">
+<section id="model-fitting-4" class="slide level1">
 <h1>Model Fitting</h1>
 <pre><code>library(discrim)
 library(ranger)
@@ -507,7 +623,7 @@ rf_wf  &lt;- workflow() |&gt;
 lda_fit &lt;- fit(lda_wf, data = train_data)
 rf_fit  &lt;- fit(rf_wf,  data = train_data)</code></pre>
 </section>
-<section id="prediction-model-evaluation-1" class="slide level1">
+<section id="prediction-model-evaluation-2" class="slide level1">
 <h1>Prediction &amp; Model Evaluation</h1>
 <ul>
 <li>Primary metric: ROC AUC on held-out test set</li>
@@ -515,7 +631,7 @@ rf_fit  &lt;- fit(rf_wf,  data = train_data)</code></pre>
 <li>At default 0.5 cutoff, high-value recall is low (~5%) due to class imbalance — deployed version scores by <strong>probability</strong>, not hard class, so the business sets its own targeting threshold (e.g., top 20%)</li>
 </ul>
 </section>
-<section id="prediction-model-evaluation-2" class="slide level1">
+<section id="prediction-model-evaluation-3" class="slide level1">
 <h1>Prediction &amp; Model Evaluation</h1>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
@@ -528,7 +644,7 @@ rf_fit  &lt;- fit(rf_wf,  data = train_data)</code></pre>
 
 </div>
 <img data-src="6540GPW10-Group2-Presentation_files/figure-revealjs/unnamed-chunk-1-1.png" width="960" class="r-stretch"></section>
-<section id="interpretation-2" class="slide level1">
+<section id="interpretation-3" class="slide level1">
 <h1>Interpretation</h1>
 <ul>
 <li>Class-conditional means: high-value customers’ first orders average higher price, lower discount than non-high-value</li>
@@ -567,7 +683,34 @@ rf_fit  &lt;- fit(rf_wf,  data = train_data)</code></pre>
 <li><p><strong>Customer Value &amp; Retention (AO4):</strong> Repeat purchasing behavior helps distinguish between customers generating short-term sales and those contributing to longer-term customer value</p></li>
 <li><p><strong>Seasonality (AO5):</strong> Sales performance changes over time, demonstrating the importance of seasonal patterns when forecasting demand and planning marketing activity</p></li>
 <li><p><strong>Overall Finding:</strong> Profitability cannot be explained by sales volume alone — acquisition source, satisfaction, returns, repeat purchasing, discounts, and seasonality together provide a more complete picture of business performance <strong>:::</strong></p></li>
-<li><p>Recommendations for Businesses</p></li>
+</ul>
+</section>
+<section id="recommendations-for-businesses" class="slide level1">
+<h1>Recommendations for Businesses</h1>
+<ul>
+<li><strong>Optimize marketing spending by channel and product category</strong>
+<ul>
+<li>Evaluate traffic sources based on customer value and profitability rather than transaction volume alone.</li>
+<li>Shift spending toward the channel × category combinations producing the strongest results.</li>
+</ul></li>
+<li><strong>Use customer satisfaction as an early performance signal</strong>
+<ul>
+<li>Monitor customer ratings alongside pricing, discounts, and product information to identify areas where the customer experience can be improved.</li>
+</ul></li>
+<li><strong>Reduce preventable return-related costs</strong>
+<ul>
+<li>Closely monitor shipping costs and discount levels when evaluating return risk.</li>
+<li>Use return-risk models as an early-warning tool rather than relying only on historical return reports.</li>
+</ul></li>
+<li><strong>Identify high-value customers earlier</strong>
+<ul>
+<li>Use first-order purchase characteristics to score customers by their probability of becoming high-value.</li>
+<li>Prioritize higher-potential customers for retention campaigns and personalized offers.</li>
+</ul></li>
+<li><strong>Plan around seasonal demand</strong>
+<ul>
+<li>Incorporate seasonal sales patterns into inventory, promotional, and marketing planning instead of treating demand as constant throughout the year.</li>
+</ul></li>
 </ul>
 </section>
 <section id="limitations-and-directions-for-future-research" class="slide level1">
