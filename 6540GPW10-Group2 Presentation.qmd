@@ -1544,4 +1544,4 @@ Businesses should use historical seasonal patterns to support **inventory, promo
 
 -   [Presentation Slides](https://lewiswaddell.github.io/GP-W10/)
 
--   [Deploy Model Shiny App AO3] (https://ibm-6540-project.shinyapps.io/model-deployment/)
+-   [Deploy Model Shiny App AO3](https://ibm-6540-project.shinyapps.io/model-deployment/)
