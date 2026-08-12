@@ -5,12 +5,12 @@ author: "Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron
 
 format:
   revealjs:
-    theme: [default, shopifytheme2.scss]
+    theme: [default, shopifytheme4.scss]
+    slide-level: 1
     center-title-slide: true
     title-slide-attributes:
       style: "font-size: 1.6em; height: 100%; min-height: 100%; box-sizing: border-box;"
     slide-number: true
-    scrollable: true
     controls: true
     width: 2500
     height: 1000
@@ -69,6 +69,7 @@ footer: "IBM6540 | August 12, 2026"
 
 -   Research objectives
 
+<<<<<<< Updated upstream
 ## Importance of the Research
 
 ::: {.incremental}
@@ -78,10 +79,33 @@ footer: "IBM6540 | August 12, 2026"
 - Identifying the strongest drivers of return risk (`product_category`, `discount_percent`, `shipping_cost`, `rating`) turns returns from a lagging cost into an **actionable, pre-purchase signal**
 - This directly supports the broader group narrative: margin compression isn't just a discounting problem or a marketing problem — it's also a **returns problem**, and this objective isolates that piece
 :::
+=======
+Importance of the research
+>>>>>>> Stashed changes
 
--   Population / Sample
+# Population / Sample
 
--   Sample Characteristics
+## Shopify e-commerce orders from January 2023 to June 2025
+
+-   **Unit of analysis:** Individual order (n = 60,000)
+
+-   31,154 unique customers \| 6,998 unique products
+
+-   **Scope limit:** Findings generalize only to these countries, categories, and date range
+
+|              |             |        |             |          |        |         |            |
+|---------|---------|---------|---------|---------|---------|---------|---------|
+| **Country**  | USA         | UAE    | CAN         | UK       | IND    | GER     | AUS        |
+| **Category** | Accessories | Sports | Electronics | Footwear | Beauty | Fashion | Home Decor |
+
+[Kaggle, Shopify Sales Dataset for ML & EDA](https://www.kaggle.com/datasets/aliiihussain/shopify-sales-dataset-for-ml-and-eda/data)
+
+::: callout-important
+Kaggle notes the dataset is "realistic," presumably meaning transactions are not verified, and thus, **synthetic**.
+:::
+
+
+# Sample Characteristics
 
 # Analytics Objective 1
 
