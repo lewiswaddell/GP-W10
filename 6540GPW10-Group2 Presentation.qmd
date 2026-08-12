@@ -65,7 +65,23 @@ footer: "IBM6540 | August 12, 2026"
 
 # Introduction
 
--   Problem definition
+## Problem Definition
+
+---
+
+## The Core Challenge
+
+- **The Issue:** Top-line gross transaction value is growing, but net profit margins are being aggressively eroded
+- **The Friction:** High acquisition costs from `Paid Ads` & `Social Media` compounded by excessive discounting and high return rates
+- **The Gap:** No automated system to identify which product category, traffic source, and discount combinations trigger unprofitable transactions
+
+---
+
+## Business & Financial Impact
+
+- **Margin Compression:** Heavy discounts (`discount_percent`) drive volume (`quantity`) but cannibalize net `profit` per order
+- **Logistical Drain:** Returns (`is_returned`) create operational bottlenecks and sunk costs through absorbed `shipping_cost` overhead
+- **The Goal:** Build an ML framework to optimize marketing spend, predict return probability, and maximize net profit margins
 
 -   Research objectives
 
@@ -117,23 +133,58 @@ Kaggle notes the dataset is "realistic," presumably meaning transactions are not
 
 # Analytics Objective 1
 
--   Machine learning methods to be used
+Predict **average order value (AOV)** from traffic source & product category.
+Identify which **channel × category combination** drives the highest order value.
 
-    -   Regression-Focused Methods
+---
 
-    -   Classification-Focused Methods
+## Machine Learning Methods
 
-    -   Ensembles
+- **Regression:** Linear, Ridge, Lasso, Elastic Net
+- **Classification:** Logistic Regression, KNN, Decision Tree *(AOV → Low/Med/High)*
+- **Ensembles:** Random Forest, XGBoost, Bagged Trees
 
--   Data wrangling & visualization
+---
 
--   Model fitting (including Data splitting, recipe creation, & model specification)
+## Data Wrangling & Visualization
 
--   Prediction and model evaluation
+- Impute missing values + winsorize AOV outliers
+- One-hot encode channel & category; bin AOV into tiers
+- Boxplots by channel, heatmap of mean AOV across channel × category
 
--   Interpretation (e.g., Variable importance, PDP, SHAP values, etc.)
+---
 
--   Summary Findings
+## Model Fitting
+
+- 80/20 stratified split + 10-fold CV
+- Recipe: normalize, one-hot encode, bin AOV for classification
+- Tune: penalty, mtry, trees, learn rate, tree depth
+
+---
+
+## Prediction & Model Evaluation
+
+- **Regression:** RMSE · MAE · R²
+- **Classification:** Accuracy · F1 · ROC-AUC · Confusion Matrix
+- Select best model per task; evaluate on held-out test set
+
+---
+
+## Interpretation
+
+- Variable importance → top AOV-driving features
+- PDPs → isolated effect of channel & category on AOV
+- SHAP → per-order prediction breakdown
+- Interaction heatmap → predicted AOV for every channel × category pair
+
+---
+
+## Summary Findings
+
+- **[Channel X] × [Category Y]** = highest predicted AOV across all models
+- Ensembles beat linear models → non-linear interactions are significant
+- SHAP & PDPs confirm **[top channel]** and **[top category]** as key drivers
+- Prioritize spend toward highest-AOV segments to maximize revenue per order
 
 # Analytics Objective 2
 

@@ -6,8 +6,8 @@
 <script src="6540GPW10-Group2 Presentation_files/libs/quarto-html/tippy.umd.min.js"></script>
 <link href="6540GPW10-Group2 Presentation_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="6540GPW10-Group2 Presentation_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="6540GPW10-Group2 Presentation_files/libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.10.18">
+<link href="6540GPW10-Group2 Presentation_files/libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.8.26">
 
   <meta name="author" content="Group 2:   Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell,   Ron Stephen Sabilla, Brian Vuong">
   <title>Predicting Profitability, Returns, and Customer Value in Shopify Sales</title>
@@ -17,16 +17,10 @@
   <link rel="stylesheet" href="6540GPW10-Group2 Presentation_files/libs/revealjs/dist/reset.css">
   <link rel="stylesheet" href="6540GPW10-Group2 Presentation_files/libs/revealjs/dist/reveal.css">
   <style>
-    /* Default styles provided by pandoc.
-    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
-    */
+    code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
-    div.columns{display: flex; gap: 1.5em;}
-    div.column{flex: auto;}
-    @media screen {
-    div.columns{gap: min(4vw, 1.5em);}
-    div.column{overflow-x: auto;}
-    }
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
     ul.task-list{list-style: none;}
     ul.task-list li input[type="checkbox"] {
@@ -35,7 +29,7 @@
       vertical-align: middle;
     }
   </style>
-  <link rel="stylesheet" href="6540GPW10-Group2 Presentation_files/libs/revealjs/dist/theme/quarto-4f00f9d1d938103ede84f5d6dd05435d.css">
+  <link rel="stylesheet" href="6540GPW10-Group2 Presentation_files/libs/revealjs/dist/theme/quarto-d2445de6bc11c11bbc323efc4b28eeec.css">
   <link href="6540GPW10-Group2 Presentation_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
   <link href="6540GPW10-Group2 Presentation_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
   <link href="6540GPW10-Group2 Presentation_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
@@ -139,7 +133,7 @@
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
 <div class="quarto-title-author-name">
-Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen Sabilla, Brian Vuong
+Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen Sabilla, Brian Vuong 
 </div>
 </div>
 </div>
@@ -177,8 +171,24 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 </section>
 <section id="introduction" class="slide level1">
 <h1>Introduction</h1>
+<h2 id="problem-definition">Problem Definition</h2>
+</section>
+<section class="slide level1">
+
+<h2 id="the-core-challenge">The Core Challenge</h2>
 <ul>
-<li><p>Problem definition</p></li>
+<li><strong>The Issue:</strong> Top-line gross transaction value is growing, but net profit margins are being aggressively eroded</li>
+<li><strong>The Friction:</strong> High acquisition costs from <code>Paid Ads</code> &amp; <code>Social Media</code> compounded by excessive discounting and high return rates</li>
+<li><strong>The Gap:</strong> No automated system to identify which product category, traffic source, and discount combinations trigger unprofitable transactions</li>
+</ul>
+</section>
+<section class="slide level1">
+
+<h2 id="business-financial-impact">Business &amp; Financial Impact</h2>
+<ul>
+<li><p><strong>Margin Compression:</strong> Heavy discounts (<code>discount_percent</code>) drive volume (<code>quantity</code>) but cannibalize net <code>profit</code> per order</p></li>
+<li><p><strong>Logistical Drain:</strong> Returns (<code>is_returned</code>) create operational bottlenecks and sunk costs through absorbed <code>shipping_cost</code> overhead</p></li>
+<li><p><strong>The Goal:</strong> Build an ML framework to optimize marketing spend, predict return probability, and maximize net profit margins</p></li>
 <li><p>Research objectives</p></li>
 </ul>
 </section>
@@ -262,18 +272,62 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 </section>
 <section id="analytics-objective-1" class="slide level1">
 <h1>Analytics Objective 1</h1>
+<p>Predict <strong>average order value (AOV)</strong> from traffic source &amp; product category. Identify which <strong>channel × category combination</strong> drives the highest order value.</p>
+</section>
+<section class="slide level1">
+
+<h2 id="machine-learning-methods">Machine Learning Methods</h2>
 <ul>
-<li><p>Machine learning methods to be used</p>
+<li><strong>Regression:</strong> Linear, Ridge, Lasso, Elastic Net</li>
+<li><strong>Classification:</strong> Logistic Regression, KNN, Decision Tree <em>(AOV → Low/Med/High)</em></li>
+<li><strong>Ensembles:</strong> Random Forest, XGBoost, Bagged Trees</li>
+</ul>
+</section>
+<section class="slide level1">
+
+<h2 id="data-wrangling-visualization">Data Wrangling &amp; Visualization</h2>
 <ul>
-<li><p>Regression-Focused Methods</p></li>
-<li><p>Classification-Focused Methods</p></li>
-<li><p>Ensembles</p></li>
-</ul></li>
-<li><p>Data wrangling &amp; visualization</p></li>
-<li><p>Model fitting (including Data splitting, recipe creation, &amp; model specification)</p></li>
-<li><p>Prediction and model evaluation</p></li>
-<li><p>Interpretation (e.g., Variable importance, PDP, SHAP values, etc.)</p></li>
-<li><p>Summary Findings</p></li>
+<li>Impute missing values + winsorize AOV outliers</li>
+<li>One-hot encode channel &amp; category; bin AOV into tiers</li>
+<li>Boxplots by channel, heatmap of mean AOV across channel × category</li>
+</ul>
+</section>
+<section class="slide level1">
+
+<h2 id="model-fitting">Model Fitting</h2>
+<ul>
+<li>80/20 stratified split + 10-fold CV</li>
+<li>Recipe: normalize, one-hot encode, bin AOV for classification</li>
+<li>Tune: penalty, mtry, trees, learn rate, tree depth</li>
+</ul>
+</section>
+<section class="slide level1">
+
+<h2 id="prediction-model-evaluation">Prediction &amp; Model Evaluation</h2>
+<ul>
+<li><strong>Regression:</strong> RMSE · MAE · R²</li>
+<li><strong>Classification:</strong> Accuracy · F1 · ROC-AUC · Confusion Matrix</li>
+<li>Select best model per task; evaluate on held-out test set</li>
+</ul>
+</section>
+<section class="slide level1">
+
+<h2 id="interpretation">Interpretation</h2>
+<ul>
+<li>Variable importance → top AOV-driving features</li>
+<li>PDPs → isolated effect of channel &amp; category on AOV</li>
+<li>SHAP → per-order prediction breakdown</li>
+<li>Interaction heatmap → predicted AOV for every channel × category pair</li>
+</ul>
+</section>
+<section class="slide level1">
+
+<h2 id="summary-findings">Summary Findings</h2>
+<ul>
+<li><strong>[Channel X] × [Category Y]</strong> = highest predicted AOV across all models</li>
+<li>Ensembles beat linear models → non-linear interactions are significant</li>
+<li>SHAP &amp; PDPs confirm <strong>[top channel]</strong> and <strong>[top category]</strong> as key drivers</li>
+<li>Prioritize spend toward highest-AOV segments to maximize revenue per order</li>
 </ul>
 </section>
 <section id="analytics-objective-2" class="slide level1">
