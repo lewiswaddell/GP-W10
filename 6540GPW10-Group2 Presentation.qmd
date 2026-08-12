@@ -102,7 +102,6 @@ Kaggle notes the dataset is "realistic," presumably meaning transactions are not
 
 # Sample Characteristics
 
-**::: incremental**
 -   The dataset contains **60,000 Shopify e-commerce orders** from January 2023 to June 2025
 
 -   The sample includes **31,154 unique customers** and **6,998 unique products**
@@ -219,7 +218,7 @@ Kaggle notes the dataset is "realistic," presumably meaning transactions are not
 # Conclusion
 
 # Key Findings
-**::: incremental**
+
 -   **Marketing Channel Performance (AO1):** Marketing channels vary in their contribution to sales and profitability, showing that transaction volume alone does not provide a complete picture of channel performance
 
 -   **Customer Satisfaction (AO2):** Customer ratings can be analyzed alongside product, pricing, discount, and purchasing characteristics to identify factors associated with satisfaction
