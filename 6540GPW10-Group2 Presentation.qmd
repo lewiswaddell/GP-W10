@@ -1,18 +1,23 @@
 ---
 title: "Predicting Profitability, Returns, and Customer Value in Shopify Sales"
 subtitle: "Final Report"
-author: "**Group 2:** <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen Sabilla, Brian Vuong"
+author: "Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen Sabilla, Brian Vuong"
+
 format:
-  revealjs: 
+  revealjs:
     theme: [default, shopifytheme2.scss]
+    center-title-slide: true
+    title-slide-attributes:
+      style: "font-size: 1.6em; height: 100%; min-height: 100%; box-sizing: border-box;"
     slide-number: true
     scrollable: true
     controls: true
     width: 2500
     height: 1000
-    margin: 0.4
+    margin: 0.08
     min-scale: 0.2
     max-scale: 1
+
 footer: "IBM6540 | August 12, 2026"
 ---
 
