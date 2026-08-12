@@ -6,8 +6,8 @@
 <script src="6540GPW10-Group2 Presentation_files/libs/quarto-html/tippy.umd.min.js"></script>
 <link href="6540GPW10-Group2 Presentation_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="6540GPW10-Group2 Presentation_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="6540GPW10-Group2 Presentation_files/libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
-  <meta name="generator" content="quarto-1.8.26">
+<link href="6540GPW10-Group2 Presentation_files/libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.10.18">
 
   <meta name="author" content="Group 2:   Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell,   Ron Stephen Sabilla, Brian Vuong">
   <title>Predicting Profitability, Returns, and Customer Value in Shopify Sales</title>
@@ -17,10 +17,16 @@
   <link rel="stylesheet" href="6540GPW10-Group2 Presentation_files/libs/revealjs/dist/reset.css">
   <link rel="stylesheet" href="6540GPW10-Group2 Presentation_files/libs/revealjs/dist/reveal.css">
   <style>
-    code{white-space: pre-wrap;}
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
     span.smallcaps{font-variant: small-caps;}
-    div.columns{display: flex; gap: min(4vw, 1.5em);}
-    div.column{flex: auto; overflow-x: auto;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
     ul.task-list{list-style: none;}
     ul.task-list li input[type="checkbox"] {
@@ -29,7 +35,7 @@
       vertical-align: middle;
     }
   </style>
-  <link rel="stylesheet" href="6540GPW10-Group2 Presentation_files/libs/revealjs/dist/theme/quarto-d2445de6bc11c11bbc323efc4b28eeec.css">
+  <link rel="stylesheet" href="6540GPW10-Group2 Presentation_files/libs/revealjs/dist/theme/quarto-4f00f9d1d938103ede84f5d6dd05435d.css">
   <link href="6540GPW10-Group2 Presentation_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
   <link href="6540GPW10-Group2 Presentation_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
   <link href="6540GPW10-Group2 Presentation_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
@@ -133,7 +139,7 @@
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
 <div class="quarto-title-author-name">
-Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen Sabilla, Brian Vuong 
+Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen Sabilla, Brian Vuong
 </div>
 </div>
 </div>
@@ -245,6 +251,14 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 </section>
 <section id="sample-characteristics" class="slide level1">
 <h1>Sample Characteristics</h1>
+<p><strong>::: incremental</strong> - The dataset contains <strong>60,000 Shopify e-commerce orders</strong> from January 2023 to June 2025</p>
+<ul>
+<li><p>The sample includes <strong>31,154 unique customers</strong> and <strong>6,998 unique products</strong></p></li>
+<li><p>Customers are located across <strong>7 countries</strong>: USA, UAE, Canada, UK, India, Germany, and Australia</p></li>
+<li><p>Products are grouped into <strong>7 categories</strong>: Accessories, Sports, Electronics, Footwear, Beauty, Fashion, and Home Decor</p></li>
+<li><p>Key variables capture <strong>customer characteristics, product information, pricing, discounts, traffic sources, ratings, returns, and purchasing behavior</strong></p></li>
+<li><p>This allows the analysis to examine the customer journey across <strong>acquisition, satisfaction, returns, profitability, retention, and seasonality</strong> <strong>:::</strong></p></li>
+</ul>
 </section>
 <section id="analytics-objective-1" class="slide level1">
 <h1>Analytics Objective 1</h1>
@@ -328,8 +342,16 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 </section>
 <section id="conclusion" class="slide level1">
 <h1>Conclusion</h1>
+</section>
+<section id="key-findings" class="slide level1">
+<h1>Key Findings</h1>
+<p><strong>::: incremental</strong> - <strong>Marketing Channel Performance (AO1):</strong> Marketing channels vary in their contribution to sales and profitability, showing that transaction volume alone does not provide a complete picture of channel performance</p>
 <ul>
-<li><p>Key Findings</p></li>
+<li><p><strong>Customer Satisfaction (AO2):</strong> Customer ratings can be analyzed alongside product, pricing, discount, and purchasing characteristics to identify factors associated with satisfaction</p></li>
+<li><p><strong>Product Returns (AO3):</strong> Return behavior can be predicted using customer and order characteristics, although class imbalance makes identifying returned orders more challenging</p></li>
+<li><p><strong>Customer Value &amp; Retention (AO4):</strong> Repeat purchasing behavior helps distinguish between customers generating short-term sales and those contributing to longer-term customer value</p></li>
+<li><p><strong>Seasonality (AO5):</strong> Sales performance changes over time, demonstrating the importance of seasonal patterns when forecasting demand and planning marketing activity</p></li>
+<li><p><strong>Overall Finding:</strong> Profitability cannot be explained by sales volume alone — acquisition source, satisfaction, returns, repeat purchasing, discounts, and seasonality together provide a more complete picture of business performance <strong>:::</strong></p></li>
 <li><p>Recommendations for Businesses</p></li>
 </ul>
 </section>

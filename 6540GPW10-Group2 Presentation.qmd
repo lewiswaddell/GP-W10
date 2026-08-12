@@ -102,6 +102,20 @@ Kaggle notes the dataset is "realistic," presumably meaning transactions are not
 
 # Sample Characteristics
 
+**::: incremental**
+-   The dataset contains **60,000 Shopify e-commerce orders** from January 2023 to June 2025
+
+-   The sample includes **31,154 unique customers** and **6,998 unique products**
+
+-   Customers are located across **7 countries**: USA, UAE, Canada, UK, India, Germany, and Australia
+
+-   Products are grouped into **7 categories**: Accessories, Sports, Electronics, Footwear, Beauty, Fashion, and Home Decor
+
+-   Key variables capture **customer characteristics, product information, pricing, discounts, traffic sources, ratings, returns, and purchasing behavior**
+
+-   This allows the analysis to examine the customer journey across **acquisition, satisfaction, returns, profitability, retention, and seasonality**
+**:::**
+
 # Analytics Objective 1
 
 -   Machine learning methods to be used
@@ -204,7 +218,20 @@ Kaggle notes the dataset is "realistic," presumably meaning transactions are not
 
 # Conclusion
 
--   Key Findings
+# Key Findings
+**::: incremental**
+-   **Marketing Channel Performance (AO1):** Marketing channels vary in their contribution to sales and profitability, showing that transaction volume alone does not provide a complete picture of channel performance
+
+-   **Customer Satisfaction (AO2):** Customer ratings can be analyzed alongside product, pricing, discount, and purchasing characteristics to identify factors associated with satisfaction
+
+-   **Product Returns (AO3):** Return behavior can be predicted using customer and order characteristics, although class imbalance makes identifying returned orders more challenging
+
+-   **Customer Value & Retention (AO4):** Repeat purchasing behavior helps distinguish between customers generating short-term sales and those contributing to longer-term customer value
+
+-   **Seasonality (AO5):** Sales performance changes over time, demonstrating the importance of seasonal patterns when forecasting demand and planning marketing activity
+
+-   **Overall Finding:** Profitability cannot be explained by sales volume alone — acquisition source, satisfaction, returns, repeat purchasing, discounts, and seasonality together provide a more complete picture of business performance
+**:::**
 
 -   Recommendations for Businesses
 
