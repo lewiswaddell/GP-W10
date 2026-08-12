@@ -69,19 +69,15 @@ footer: "IBM6540 | August 12, 2026"
 
 -   Research objectives
 
-<<<<<<< Updated upstream
 ## Importance of the Research
 
 ::: {.incremental}
-- Online retailers pour money into acquisition and discounting, but **returns quietly erode net profit margins** after the sale is already booked as revenue
-- Every returned order carries a **sunk cost** — the discount was given, the item shipped, and now the shipping cost and processing overhead are absorbed with no revenue to show for it
-- Without a predictive view of *which* orders are likely to be returned, businesses can only react to returns after they happen — not prevent them
-- Identifying the strongest drivers of return risk (`product_category`, `discount_percent`, `shipping_cost`, `rating`) turns returns from a lagging cost into an **actionable, pre-purchase signal**
-- This directly supports the broader group narrative: margin compression isn't just a discounting problem or a marketing problem — it's also a **returns problem**, and this objective isolates that piece
+- Top-line transaction value is growing across the business, but **net profit margins are being eroded** — and no single team or department owns the full explanation why
+- Acquisition costs, discounting behavior, customer satisfaction, return rates, and retention all interact, but are typically analyzed in isolation — this project connects them
+- Understanding *which* marketing channels perform best (AO1), what drives customer satisfaction (AO2), what triggers returns (AO3), whether repeat customers are more profitable (AO4), and how sales shift seasonally (AO5) gives a full-funnel view of where margin is actually being lost
+- Predictive models across these objectives let the business move from reactive reporting to **proactively flagging unprofitable channel–category–discount combinations before they happen**
+- This addresses a real operational gap: the business currently lacks any automated, predictive system tying acquisition, satisfaction, returns, and retention together
 :::
-=======
-Importance of the research
->>>>>>> Stashed changes
 
 # Population / Sample
 
@@ -221,10 +217,11 @@ Kaggle notes the dataset is "realistic," presumably meaning transactions are not
 ### Limitations
 
 ::: {.incremental}
-- Predictive scope was intentionally narrow — only four features (`product_category`, `discount_percent`, `shipping_cost`, `rating`) were used, so drivers like customer history, marketing channel, or seasonality aren't captured
-- Kaggle notes the dataset is "realistic" rather than verified, meaning it is likely synthetic — patterns may not generalize to real Shopify order data
-- Returns are a minority class (~15%), which caps achievable sensitivity even after optimizing for ROC AUC
-- The deployed calculator reflects a single static training snapshot — it does not retrain or adapt as new orders come in
+- Kaggle notes the dataset is "realistic" rather than verified, meaning it is likely **synthetic** — findings may not generalize to real Shopify transaction data
+- Findings are scoped to this dataset's countries, categories, and date range (Jan 2023–Jun 2025) and may not generalize beyond it
+- Each Analytics Objective models its outcome independently — none of the five models account for interactions *across* objectives (e.g., a channel's effect on both satisfaction and return risk together)
+- Several models (e.g., AO3's return prediction) face class imbalance, which caps achievable sensitivity even after optimizing evaluation metrics like ROC AUC
+- The deployed model reflects a single static training snapshot and does not retrain or adapt as new orders come in
 :::
 :::
 
@@ -232,14 +229,9 @@ Kaggle notes the dataset is "realistic," presumably meaning transactions are not
 ### Future Research
 
 ::: {.incremental}
-- Validate the model against real, non-synthetic transaction data before any operational use
-- Expand the feature set (customer purchase history, traffic source, seasonality) to test whether `shipping_cost`'s unexpected top-ranked SHAP importance holds
-- Explore cost-sensitive classification thresholds tied to actual return-processing costs, rather than a default 0.5 cutoff
-- Build a monitoring/retraining pipeline to catch model drift once deployed in production
-:::
-:::
-
-:::
+- Validate findings against real, non-synthetic transaction data before informing operational decisions
+- Build an integrated model connecting acquisition, satisfaction, returns, and retention rather than five separate models, to capture cross-objective interactions
+- Extend the population beyond the current
 
 # Appendix
 
