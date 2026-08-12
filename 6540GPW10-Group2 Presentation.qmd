@@ -69,7 +69,7 @@ footer: "IBM6540 | August 12, 2026"
 
 -   Research objectives
 
-## Importance of the Research
+# Importance of the Research
 
 ::: {.incremental}
 - Top-line transaction value is growing across the business, but **net profit margins are being eroded** — and no single team or department owns the full explanation why
@@ -209,7 +209,7 @@ Kaggle notes the dataset is "realistic," presumably meaning transactions are not
 
 -   Recommendations for Businesses
 
-## Limitations and Directions for Future Research
+# Limitations and Directions for Future Research
 
 ::: {.columns}
 
