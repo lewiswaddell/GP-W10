@@ -98,17 +98,15 @@ editor:
 
 # Research Objectives
 
-This study uses machine learning to examine the major factors affecting profitability, customer behavior, and business performance in Shopify e-commerce transactions.
+- **RO1 – Marketing Channels & Average Order Value:** Determine which marketing traffic source generates the highest average order value and whether this relationship differs across product categories.
 
-- **AO1 – Marketing Channel Performance:** Predict average order value (AOV) using traffic source and product category to identify the highest-value channel × category combinations.
+- **RO2 – Customer Satisfaction Analysis:** Identify which customer and transaction characteristics contribute to higher customer satisfaction by examining how product categories, traffic sources, discount levels, and purchasing behavior influence customer rating.
 
-- **AO2 – Customer Satisfaction:** Predict customer ratings using product category, product price, discount percentage, shipping cost, and traffic source to identify the factors most associated with customer satisfaction.
+- **RO3 – Returns & Profitability Analysis:** Evaluate how product categories, shipping costs, customer ratings, and discount structures impact the probability of an item being returned and quantify the resulting drain on net profit.
 
-- **AO3 – Product Returns:** Predict the likelihood of a product return using product category, discount percentage, shipping cost, and customer rating.
+- **RO4 – Profit Impact of Customer Retention:** Determine whether repeat customers are a more margin-efficient growth channel than new customer acquisition.
 
-- **AO4 – Customer Value:** Predict whether a new customer will become a high-value customer using information available from their first purchase.
-
-- **AO5 – Seasonality:** Analyze changes in sales performance over time to identify seasonal patterns that can support forecasting and marketing decisions.
+- **RO5 – Sales Trends & Seasonality:** Determine how sales performance changes over time and whether seasonal patterns differ across product categories.
 
 # Importance of the Research
 
@@ -344,410 +342,6 @@ rf_fit |>
 
 # Analytics Objective 2
 
-Predict **customer satisfaction (`rating`)** using product category, product price, discount percentage, shipping cost, and traffic source.
-
-**Goal:** Identify which order and marketing characteristics are most useful for predicting customer ratings.
-
-# Machine Learning Methods
-
-- **Regression-Focused:** Linear Regression
-- **Classification-Focused:** Not used because `rating` is treated as a continuous outcome
-- **Ensembles:** Random Forest and XGBoost
-- Models are compared using held-out test-set **RMSE, MAE, and R²**
-
-```{r ao2-setup}
-#| include: false
-#| message: false
-#| warning: false
-
-library(tidyverse)
-library(tidymodels)
-library(ranger)
-library(xgboost)
-
-set.seed(2026)
-
-df_ao2 <- df |>
-  select(
-    rating,
-    product_category,
-    product_price,
-    discount_percent,
-    shipping_cost,
-    traffic_source
-  ) |>
-  filter(
-    !is.na(rating),
-    rating >= 1,
-    rating <= 5
-  ) |>
-  mutate(
-    product_category = factor(product_category),
-    traffic_source = factor(traffic_source)
-  )
-```
-
-# Data Wrangling & Visualization
-
-- Keep customer `rating` as the continuous outcome
-- Use product category, price, discount, shipping cost, and traffic source as predictors
-- Remove observations without valid ratings
-- Convert categorical predictors to factors
-- Compare average customer ratings across product categories
-
-```{r ao2-visualization}
-#| echo: false
-#| fig-width: 9
-#| fig-height: 4.5
-
-ao2_category_summary <- df_ao2 |>
-  group_by(product_category) |>
-  summarise(
-    mean_rating = mean(rating, na.rm = TRUE),
-    n = n(),
-    .groups = "drop"
-  ) |>
-  arrange(desc(mean_rating))
-
-ao2_category_summary |>
-  ggplot(
-    aes(
-      x = reorder(product_category, mean_rating),
-      y = mean_rating
-    )
-  ) +
-  geom_col(fill = "#154734", alpha = 0.85) +
-  geom_text(
-    aes(label = round(mean_rating, 2)),
-    hjust = -0.15,
-    size = 4
-  ) +
-  coord_flip() +
-  scale_y_continuous(
-    limits = c(0, 5.2),
-    breaks = 0:5
-  ) +
-  labs(
-    title = "Average Customer Rating by Product Category",
-    x = "Product Category",
-    y = "Average Rating"
-  ) +
-  theme_minimal(base_size = 12)
-```
-
-# Model Fitting
-
-- **80/20 train-test split**, stratified by customer rating
-- Missing numeric values are median-imputed
-- Missing categorical values are assigned an `"Unknown"` category
-- Categorical predictors are dummy encoded
-- Three models are compared:
-  - Linear Regression
-  - Random Forest
-  - XGBoost
-
-```{r ao2-model-fitting}
-#| include: false
-#| message: false
-#| warning: false
-#| cache: true
-
-set.seed(2026)
-
-ao2_split <- initial_split(
-  df_ao2,
-  prop = 0.80,
-  strata = rating
-)
-
-ao2_train <- training(ao2_split)
-ao2_test <- testing(ao2_split)
-
-ao2_recipe <- recipe(
-  rating ~ product_category +
-    product_price +
-    discount_percent +
-    shipping_cost +
-    traffic_source,
-  data = ao2_train
-) |>
-  step_impute_median(all_numeric_predictors()) |>
-  step_unknown(all_nominal_predictors()) |>
-  step_dummy(all_nominal_predictors(), one_hot = TRUE) |>
-  step_zv(all_predictors())
-
-ao2_lm_spec <- linear_reg() |>
-  set_engine("lm")
-
-ao2_rf_spec <- rand_forest(
-  trees = 200,
-  mtry = 3,
-  min_n = 5
-) |>
-  set_engine(
-    "ranger",
-    importance = "impurity"
-  ) |>
-  set_mode("regression")
-
-ao2_xgb_spec <- boost_tree(
-  trees = 200,
-  tree_depth = 6,
-  learn_rate = 0.05,
-  min_n = 5
-) |>
-  set_engine("xgboost") |>
-  set_mode("regression")
-
-ao2_lm_wf <- workflow() |>
-  add_recipe(ao2_recipe) |>
-  add_model(ao2_lm_spec)
-
-ao2_rf_wf <- workflow() |>
-  add_recipe(ao2_recipe) |>
-  add_model(ao2_rf_spec)
-
-ao2_xgb_wf <- workflow() |>
-  add_recipe(ao2_recipe) |>
-  add_model(ao2_xgb_spec)
-
-ao2_lm_fit <- fit(
-  ao2_lm_wf,
-  data = ao2_train
-)
-
-ao2_rf_fit <- fit(
-  ao2_rf_wf,
-  data = ao2_train
-)
-
-ao2_xgb_fit <- fit(
-  ao2_xgb_wf,
-  data = ao2_train
-)
-```
-
-# Prediction & Model Evaluation
-
-Models are evaluated on the **held-out 20% test sample**.
-
-- **RMSE:** Lower is better
-- **MAE:** Lower is better
-- **R²:** Higher is better
-
-```{r ao2-evaluation}
-#| echo: false
-#| message: false
-#| warning: false
-#| cache: true
-
-ao2_metrics_function <- metric_set(
-  rmse,
-  mae,
-  rsq
-)
-
-ao2_lm_predictions <- augment(
-  ao2_lm_fit,
-  new_data = ao2_test
-)
-
-ao2_rf_predictions <- augment(
-  ao2_rf_fit,
-  new_data = ao2_test
-)
-
-ao2_xgb_predictions <- augment(
-  ao2_xgb_fit,
-  new_data = ao2_test
-)
-
-ao2_metrics <- bind_rows(
-
-  ao2_lm_predictions |>
-    ao2_metrics_function(
-      truth = rating,
-      estimate = .pred
-    ) |>
-    mutate(model = "Linear Regression"),
-
-  ao2_rf_predictions |>
-    ao2_metrics_function(
-      truth = rating,
-      estimate = .pred
-    ) |>
-    mutate(model = "Random Forest"),
-
-  ao2_xgb_predictions |>
-    ao2_metrics_function(
-      truth = rating,
-      estimate = .pred
-    ) |>
-    mutate(model = "XGBoost")
-
-) |>
-  select(model, .metric, .estimate)
-
-ao2_metrics |>
-  mutate(.estimate = round(.estimate, 3)) |>
-  pivot_wider(
-    names_from = .metric,
-    values_from = .estimate
-  ) |>
-  knitr::kable(
-    col.names = c(
-  "Model",
-  "RMSE",
-  "MAE",
-  "R²"
-),
-    caption = "AO2 Model Performance on Held-Out Test Data"
-  )
-```
-
-# Model Comparison
-
-```{r ao2-model-comparison}
-#| echo: false
-#| fig-width: 9
-#| fig-height: 4.5
-
-ao2_metrics |>
-  filter(.metric == "rmse") |>
-  ggplot(
-    aes(
-      x = reorder(model, .estimate),
-      y = .estimate
-    )
-  ) +
-  geom_col(fill = "#154734", alpha = 0.85) +
-  geom_text(
-    aes(label = round(.estimate, 3)),
-    hjust = -0.15,
-    size = 4
-  ) +
-  coord_flip() +
-  labs(
-    title = "Customer Rating Prediction — Model Comparison",
-    subtitle = "Lower RMSE indicates better predictive performance",
-    x = NULL,
-    y = "Test RMSE"
-  ) +
-  theme_minimal(base_size = 12)
-```
-
-# Interpretation
-
-Random Forest variable importance is used to identify which predictors contribute most strongly to customer-rating predictions.
-
-```{r ao2-importance}
-#| echo: false
-#| fig-width: 9
-#| fig-height: 4.5
-#| cache: true
-
-ao2_rf_engine <- ao2_rf_fit |>
-  extract_fit_engine()
-
-ao2_importance <- tibble(
-  Variable = names(
-    ao2_rf_engine$variable.importance
-  ),
-  Importance = as.numeric(
-    ao2_rf_engine$variable.importance
-  )
-) |>
-  arrange(desc(Importance))
-
-ao2_importance |>
-  slice_head(n = 10) |>
-  ggplot(
-    aes(
-      x = reorder(Variable, Importance),
-      y = Importance
-    )
-  ) +
-  geom_col(fill = "#154734", alpha = 0.85) +
-  coord_flip() +
-  labs(
-    title = "Random Forest Variable Importance — Customer Satisfaction",
-    x = "Predictor",
-    y = "Importance"
-  ) +
-  theme_minimal(base_size = 12)
-```
-
-```{r ao2-summary-values}
-#| include: false
-
-ao2_best_model <- ao2_metrics |>
-  filter(.metric == "rmse") |>
-  slice_min(
-    .estimate,
-    n = 1,
-    with_ties = FALSE
-  ) |>
-  pull(model)
-
-ao2_best_rmse <- ao2_metrics |>
-  filter(
-    model == ao2_best_model,
-    .metric == "rmse"
-  ) |>
-  pull(.estimate)
-
-ao2_best_mae <- ao2_metrics |>
-  filter(
-    model == ao2_best_model,
-    .metric == "mae"
-  ) |>
-  pull(.estimate)
-
-ao2_best_rsq <- ao2_metrics |>
-  filter(
-    model == ao2_best_model,
-    .metric == "rsq"
-  ) |>
-  pull(.estimate)
-
-ao2_top_feature <- ao2_importance |>
-  slice_max(
-    Importance,
-    n = 1,
-    with_ties = FALSE
-  ) |>
-  pull(Variable)
-
-ao2_top_category <- ao2_category_summary |>
-  slice_max(
-    mean_rating,
-    n = 1,
-    with_ties = FALSE
-  ) |>
-  pull(product_category)
-
-ao2_top_category_rating <- ao2_category_summary |>
-  slice_max(
-    mean_rating,
-    n = 1,
-    with_ties = FALSE
-  ) |>
-  pull(mean_rating)
-```
-
-# Summary Findings
-
-- **Best Model:** `r ao2_best_model`
-- **Test RMSE:** `r round(ao2_best_rmse, 3)`
-- **Test MAE:** `r round(ao2_best_mae, 3)`
-- **Test R²:** `r round(ao2_best_rsq, 3)`
-- **Most Important Predictor:** `r ao2_top_feature`
-- **Highest-Rated Product Category:** `r ao2_top_category`
-- **Average Rating:** `r round(ao2_top_category_rating, 2)` out of 5
-
-`r if (ao2_best_rsq < 0.10) "Overall predictive strength is weak, suggesting that customer satisfaction depends heavily on factors not captured in the current dataset." else if (ao2_best_rsq < 0.30) "The models show modest predictive power, suggesting that the available transaction characteristics explain some, but not most, variation in customer satisfaction." else "The models demonstrate meaningful predictive ability using the available transaction characteristics."`
-
-Businesses should use these predictors as **diagnostic signals rather than causal evidence** when evaluating customer satisfaction.
 
 # Analytics Objective 3
 
@@ -1141,18 +735,720 @@ lda_preds |>
     `predict.py`) — customer's first-order price/discount in, high-value
     probability out, business sets its own targeting cutoff
 
-# Analytics Objective 5
+# Analytics Objective 5 — Sales Trends & Seasonality
 
--   Machine learning methods to be used
+**Objective:** Determine how sales performance changes over time and whether seasonal patterns differ across product categories.
 
--   Model fitting (including Data splitting, recipe creation, & model
-    specification)
+**Hypotheses:**
 
--   Prediction and model evaluation
+- Revenue and order volume will vary across months and quarters.
+- Seasonal sales patterns will differ across product categories.
+- Identifying peak sales periods can improve inventory planning, promotional timing, and marketing strategy.
 
--   Interpretation (e.g., Variable importance, PDP, SHAP values, etc.)
+```{r ao5-setup}
+#| include: false
+#| message: false
+#| warning: false
 
--   Summary Findings
+library(tidyverse)
+library(tidymodels)
+library(lubridate)
+library(ranger)
+library(xgboost)
+
+set.seed(2026)
+
+ao5_raw <- readr::read_csv(
+  "shopify_sales_dataset_ml_eda 2.csv",
+  show_col_types = FALSE
+) |>
+  mutate(
+  order_date = lubridate::ymd(order_date)
+) |>
+  filter(
+    !is.na(order_date),
+    !is.na(revenue),
+    !is.na(quantity),
+    !is.na(product_category)
+  )
+
+ao5_monthly_category <- ao5_raw |>
+  mutate(
+    order_month = floor_date(order_date, "month"),
+    year = year(order_date),
+    month_num = month(order_date),
+    month_name = factor(
+      month_num,
+      levels = 1:12,
+      labels = month.abb
+    ),
+    quarter = factor(
+      paste0(
+        "Q",
+        lubridate::quarter(order_date)
+      ),
+      levels = paste0("Q", 1:4)
+    ),
+    product_category = factor(product_category)
+  ) |>
+  group_by(
+    order_month,
+    year,
+    month_num,
+    month_name,
+    quarter,
+    product_category
+  ) |>
+  summarise(
+    monthly_revenue = sum(revenue, na.rm = TRUE),
+    quantity_sold = sum(quantity, na.rm = TRUE),
+    order_volume = n(),
+    .groups = "drop"
+  ) |>
+  arrange(order_month, product_category) |>
+  mutate(
+    time_index = match(
+      order_month,
+      sort(unique(order_month))
+    )
+  )
+
+ao5_monthly_overall <- ao5_raw |>
+  mutate(
+    order_month = floor_date(order_date, "month")
+  ) |>
+  group_by(order_month) |>
+  summarise(
+    monthly_revenue = sum(revenue, na.rm = TRUE),
+    quantity_sold = sum(quantity, na.rm = TRUE),
+    order_volume = n(),
+    .groups = "drop"
+  ) |>
+  mutate(
+    month_name = factor(
+      month(order_month),
+      levels = 1:12,
+      labels = month.abb
+    ),
+    quarter = factor(
+      paste0(
+        "Q",
+        lubridate::quarter(order_month)
+      ),
+      levels = paste0("Q", 1:4)
+    )
+  )
+```
+
+# Machine Learning Methods
+
+- **Statistical Baseline:** One-way ANOVA and two-way ANOVA
+- **Regression:** Linear Regression
+- **Ensemble Models:** Random Forest and XGBoost
+- **Primary Outcome:** Monthly revenue by product category
+- **Secondary Performance Measures:** Quantity sold and order volume
+- **Validation:** Time-based holdout rather than a random split
+
+The models use **month, product category, and time trend** to predict monthly revenue.
+
+Quarter is evaluated separately through ANOVA because month already captures the underlying calendar seasonality in the predictive models.
+
+# Data Wrangling & Visualization
+
+- Convert `order_date` into a valid date variable
+- Extract month, quarter, and year
+- Aggregate transactions into monthly sales performance
+- Calculate:
+  - Monthly revenue
+  - Quantity sold
+  - Order volume
+- Compare trends from January 2023 through June 2025
+
+```{r ao5-monthly-trends}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 5.5
+
+ao5_monthly_overall |>
+  select(
+    order_month,
+    monthly_revenue,
+    quantity_sold
+  ) |>
+  pivot_longer(
+    cols = c(
+      monthly_revenue,
+      quantity_sold
+    ),
+    names_to = "metric",
+    values_to = "value"
+  ) |>
+  mutate(
+    metric = recode(
+      metric,
+      monthly_revenue = "Monthly Revenue ($)",
+      quantity_sold = "Quantity Sold"
+    )
+  ) |>
+  ggplot(
+    aes(
+      x = order_month,
+      y = value
+    )
+  ) +
+  geom_line(
+    linewidth = 1,
+    color = "#154734"
+  ) +
+  geom_point(
+    size = 2,
+    color = "#154734"
+  ) +
+  facet_wrap(
+    ~metric,
+    scales = "free_y",
+    ncol = 1
+  ) +
+  scale_x_date(
+    date_breaks = "3 months",
+    date_labels = "%b\n%Y"
+  ) +
+  scale_y_continuous(
+    labels = scales::comma
+  ) +
+  labs(
+    title = "Shopify Sales Performance Over Time",
+    x = NULL,
+    y = NULL
+  ) +
+  theme_minimal(base_size = 12)
+```
+
+# Seasonality by Product Category
+
+To evaluate whether seasonal patterns differ by product category, average monthly revenue is compared across month × category combinations.
+
+The heatmap uses the two complete calendar years, **2023–2024**, so that the partial 2025 year does not distort seasonal comparisons.
+
+```{r ao5-seasonality-heatmap}
+#| echo: false
+#| fig-width: 10
+#| fig-height: 5
+
+ao5_seasonal_heatmap <- ao5_monthly_category |>
+  filter(
+    order_month < as.Date("2025-01-01")
+  ) |>
+  group_by(
+    month_name,
+    product_category
+  ) |>
+  summarise(
+    avg_monthly_revenue =
+      mean(monthly_revenue),
+    .groups = "drop"
+  )
+
+ao5_seasonal_heatmap |>
+  ggplot(
+    aes(
+      x = month_name,
+      y = product_category,
+      fill = avg_monthly_revenue
+    )
+  ) +
+  geom_tile(
+    color = "white",
+    linewidth = 0.5
+  ) +
+  scale_fill_gradient(
+    low = "#dcefe5",
+    high = "#154734",
+    labels = scales::dollar
+  ) +
+  labs(
+    title = "Average Monthly Revenue by Product Category",
+    subtitle = "Complete calendar years: 2023–2024",
+    x = "Month",
+    y = "Product Category",
+    fill = "Avg. Revenue"
+  ) +
+  theme_minimal(base_size = 12)
+```
+
+# Model Fitting
+
+Because this objective involves time, a **time-based train/test split** is more appropriate than randomly mixing earlier and later observations.
+
+- **Training:** January 2023 – December 2024
+- **Testing:** January 2025 – June 2025
+- Predictors:
+  - Month
+  - Product category
+  - Time trend
+- Models:
+  - Linear Regression
+  - Random Forest
+  - XGBoost
+
+```{r ao5-model-fitting}
+#| include: false
+#| message: false
+#| warning: false
+#| cache: true
+
+ao5_model_data <- ao5_monthly_category |>
+  select(
+    order_month,
+    monthly_revenue,
+    month_name,
+    product_category,
+    time_index
+  )
+
+ao5_train <- ao5_model_data |>
+  filter(
+    order_month < as.Date("2025-01-01")
+  )
+
+ao5_test <- ao5_model_data |>
+  filter(
+    order_month >= as.Date("2025-01-01")
+  )
+
+ao5_recipe <- recipe(
+  monthly_revenue ~
+    month_name +
+    product_category +
+    time_index,
+  data = ao5_train
+) |>
+  step_unknown(
+    all_nominal_predictors()
+  ) |>
+  step_dummy(
+    all_nominal_predictors(),
+    one_hot = TRUE
+  ) |>
+  step_zv(
+    all_predictors()
+  )
+
+ao5_lm_spec <- linear_reg() |>
+  set_engine("lm")
+
+ao5_rf_spec <- rand_forest(
+  trees = 500,
+  mtry = 5,
+  min_n = 5
+) |>
+  set_engine(
+    "ranger",
+    importance = "impurity"
+  ) |>
+  set_mode("regression")
+
+ao5_xgb_spec <- boost_tree(
+  trees = 300,
+  tree_depth = 4,
+  learn_rate = 0.05,
+  min_n = 5
+) |>
+  set_engine("xgboost") |>
+  set_mode("regression")
+
+ao5_lm_wf <- workflow() |>
+  add_recipe(ao5_recipe) |>
+  add_model(ao5_lm_spec)
+
+ao5_rf_wf <- workflow() |>
+  add_recipe(ao5_recipe) |>
+  add_model(ao5_rf_spec)
+
+ao5_xgb_wf <- workflow() |>
+  add_recipe(ao5_recipe) |>
+  add_model(ao5_xgb_spec)
+
+ao5_lm_fit <- fit(
+  ao5_lm_wf,
+  data = ao5_train
+)
+
+ao5_rf_fit <- fit(
+  ao5_rf_wf,
+  data = ao5_train
+)
+
+ao5_xgb_fit <- fit(
+  ao5_xgb_wf,
+  data = ao5_train
+)
+
+ao5_anova_data <- ao5_monthly_category |>
+  filter(
+    order_month <
+      as.Date("2025-01-01")
+  )
+
+ao5_quarter_anova <- aov(
+  monthly_revenue ~ quarter,
+  data = ao5_anova_data
+)
+
+ao5_interaction_anova <- aov(
+  monthly_revenue ~
+    quarter * product_category,
+  data = ao5_anova_data
+)
+
+ao5_quarter_p <-
+  summary(
+    ao5_quarter_anova
+  )[[1]][["Pr(>F)"]][1]
+
+ao5_interaction_p <-
+  summary(
+    ao5_interaction_anova
+  )[[1]][["Pr(>F)"]][3]
+```
+
+# Prediction & Model Evaluation
+
+Models are evaluated on **January–June 2025**, which was not used during training.
+
+- **RMSE:** Lower is better
+- **MAE:** Lower is better
+- **R²:** Higher is better
+
+```{r ao5-evaluation}
+#| echo: false
+#| message: false
+#| warning: false
+#| cache: true
+
+ao5_metrics_function <- metric_set(
+  rmse,
+  mae,
+  rsq
+)
+
+ao5_lm_predictions <- augment(
+  ao5_lm_fit,
+  new_data = ao5_test
+)
+
+ao5_rf_predictions <- augment(
+  ao5_rf_fit,
+  new_data = ao5_test
+)
+
+ao5_xgb_predictions <- augment(
+  ao5_xgb_fit,
+  new_data = ao5_test
+)
+
+ao5_metrics <- bind_rows(
+
+  ao5_lm_predictions |>
+    ao5_metrics_function(
+      truth = monthly_revenue,
+      estimate = .pred
+    ) |>
+    mutate(
+      model = "Linear Regression"
+    ),
+
+  ao5_rf_predictions |>
+    ao5_metrics_function(
+      truth = monthly_revenue,
+      estimate = .pred
+    ) |>
+    mutate(
+      model = "Random Forest"
+    ),
+
+  ao5_xgb_predictions |>
+    ao5_metrics_function(
+      truth = monthly_revenue,
+      estimate = .pred
+    ) |>
+    mutate(
+      model = "XGBoost"
+    )
+
+) |>
+  select(
+    model,
+    .metric,
+    .estimate
+  )
+
+ao5_metrics |>
+  mutate(
+    .estimate = round(
+      .estimate,
+      3
+    )
+  ) |>
+  pivot_wider(
+    names_from = .metric,
+    values_from = .estimate
+  ) |>
+  select(
+    model,
+    rmse,
+    mae,
+    rsq
+  ) |>
+  knitr::kable(
+    col.names = c(
+      "Model",
+      "RMSE",
+      "MAE",
+      "R²"
+    ),
+    caption =
+      "AO5 Performance on 2025 Holdout Data"
+  )
+```
+
+# Model Comparison
+
+```{r ao5-model-comparison}
+#| echo: false
+#| fig-width: 9
+#| fig-height: 4.5
+
+ao5_metrics |>
+  filter(
+    .metric == "rmse"
+  ) |>
+  ggplot(
+    aes(
+      x = reorder(
+        model,
+        .estimate
+      ),
+      y = .estimate
+    )
+  ) +
+  geom_col(
+    fill = "#154734",
+    alpha = 0.85
+  ) +
+  geom_text(
+    aes(
+      label = scales::comma(
+        round(.estimate)
+      )
+    ),
+    hjust = -0.15,
+    size = 4
+  ) +
+  coord_flip() +
+  labs(
+    title =
+      "Monthly Revenue Prediction — Model Comparison",
+    subtitle =
+      "Lower test RMSE indicates better performance",
+    x = NULL,
+    y = "Test RMSE ($)"
+  ) +
+  theme_minimal(base_size = 12)
+```
+
+# Interpretation
+
+Random Forest variable importance provides an additional diagnostic view of which calendar and category features contribute the most information to monthly revenue predictions.
+
+These importance scores indicate **predictive signal**, not causation.
+
+```{r ao5-importance}
+#| echo: false
+#| fig-width: 9
+#| fig-height: 4.5
+#| cache: true
+
+ao5_rf_engine <- ao5_rf_fit |>
+  extract_fit_engine()
+
+ao5_importance <- tibble(
+  Variable = names(
+    ao5_rf_engine$variable.importance
+  ),
+  Importance = as.numeric(
+    ao5_rf_engine$variable.importance
+  )
+) |>
+  arrange(
+    desc(Importance)
+  )
+
+ao5_importance |>
+  slice_head(
+    n = 10
+  ) |>
+  ggplot(
+    aes(
+      x = reorder(
+        Variable,
+        Importance
+      ),
+      y = Importance
+    )
+  ) +
+  geom_col(
+    fill = "#154734",
+    alpha = 0.85
+  ) +
+  coord_flip() +
+  labs(
+    title =
+      "Feature Importance — Sales Trends & Seasonality",
+    x = "Predictor",
+    y = "Importance"
+  ) +
+  theme_minimal(base_size = 12)
+```
+
+```{r ao5-summary-values}
+#| include: false
+
+ao5_best_model <- ao5_metrics |>
+  filter(
+    .metric == "rmse"
+  ) |>
+  slice_min(
+    .estimate,
+    n = 1,
+    with_ties = FALSE
+  ) |>
+  pull(model)
+
+ao5_best_rmse <- ao5_metrics |>
+  filter(
+    model == ao5_best_model,
+    .metric == "rmse"
+  ) |>
+  pull(.estimate)
+
+ao5_best_mae <- ao5_metrics |>
+  filter(
+    model == ao5_best_model,
+    .metric == "mae"
+  ) |>
+  pull(.estimate)
+
+ao5_best_rsq <- ao5_metrics |>
+  filter(
+    model == ao5_best_model,
+    .metric == "rsq"
+  ) |>
+  pull(.estimate)
+
+ao5_complete_years <- ao5_monthly_overall |>
+  filter(
+    order_month <
+      as.Date("2025-01-01")
+  )
+
+ao5_peak_month_table <-
+  ao5_complete_years |>
+  group_by(month_name) |>
+  summarise(
+    avg_monthly_revenue =
+      mean(monthly_revenue),
+    .groups = "drop"
+  )
+
+ao5_peak_month <-
+  ao5_peak_month_table |>
+  slice_max(
+    avg_monthly_revenue,
+    n = 1,
+    with_ties = FALSE
+  ) |>
+  pull(month_name)
+
+ao5_peak_month_revenue <-
+  ao5_peak_month_table |>
+  slice_max(
+    avg_monthly_revenue,
+    n = 1,
+    with_ties = FALSE
+  ) |>
+  pull(avg_monthly_revenue)
+
+ao5_peak_quarter_table <-
+  ao5_complete_years |>
+  group_by(quarter) |>
+  summarise(
+    avg_monthly_revenue =
+      mean(monthly_revenue),
+    .groups = "drop"
+  )
+
+ao5_peak_quarter <-
+  ao5_peak_quarter_table |>
+  slice_max(
+    avg_monthly_revenue,
+    n = 1,
+    with_ties = FALSE
+  ) |>
+  pull(quarter)
+
+ao5_category_summary <-
+  ao5_monthly_category |>
+  filter(
+    order_month <
+      as.Date("2025-01-01")
+  ) |>
+  group_by(
+    product_category
+  ) |>
+  summarise(
+    avg_monthly_revenue =
+      mean(monthly_revenue),
+    .groups = "drop"
+  )
+
+ao5_top_category <-
+  ao5_category_summary |>
+  slice_max(
+    avg_monthly_revenue,
+    n = 1,
+    with_ties = FALSE
+  ) |>
+  pull(product_category)
+
+ao5_top_feature <-
+  ao5_importance |>
+  slice_max(
+    Importance,
+    n = 1,
+    with_ties = FALSE
+  ) |>
+  pull(Variable)
+```
+
+# Summary Findings
+
+- **Best Model:** `r ao5_best_model`
+- **Test RMSE:** $`r scales::comma(round(ao5_best_rmse))`
+- **Test MAE:** $`r scales::comma(round(ao5_best_mae))`
+- **Test R²:** `r round(ao5_best_rsq, 3)`
+- **Peak Month:** `r ao5_peak_month` — average monthly revenue of approximately $`r scales::comma(round(ao5_peak_month_revenue))`
+- **Peak Quarter:** `r ao5_peak_quarter`
+- **Highest Average-Revenue Category:** `r ao5_top_category`
+- **Top Random Forest Feature:** `r ao5_top_feature`
+
+**Quarter Effect:** `r if (ao5_quarter_p < 0.05) paste0("Quarterly differences were statistically significant (p = ", round(ao5_quarter_p, 3), ").") else paste0("Quarterly differences were not statistically significant (p = ", round(ao5_quarter_p, 3), ").")`
+
+**Quarter × Product Category Interaction:** `r if (ao5_interaction_p < 0.05) paste0("Seasonal patterns differed significantly across product categories (p = ", round(ao5_interaction_p, 3), ").") else paste0("The quarter × product category interaction was not statistically significant (p = ", round(ao5_interaction_p, 3), ").")`
+
+`r if (ao5_best_rsq < 0.10) "Overall predictive strength is weak, suggesting that month, product category, and historical time trend alone do not explain much of the variation in future monthly revenue." else if (ao5_best_rsq < 0.30) "The models show modest predictive strength, indicating that seasonality and product category provide some forecasting information but additional variables would improve predictions." else "The results indicate that calendar seasonality and product category provide meaningful information for forecasting monthly revenue."`
+
+Businesses should use historical seasonal patterns to support **inventory, promotional, and marketing planning**, while recognizing that calendar timing alone may not be sufficient for accurate sales forecasting.
 
 # Conclusion
 
@@ -1187,22 +1483,23 @@ lda_preds |>
 # Recommendations for Businesses
 
 - **Optimize marketing spending by channel and product category**
-  - Evaluate traffic sources based on customer value and profitability rather than transaction volume alone.
-  - Shift spending toward the channel × category combinations producing the strongest results.
+  - Compare traffic sources based on the average order value they generate across product categories.
+  - Prioritize channel × category combinations that consistently produce stronger order values.
 
 - **Use customer satisfaction as an early performance signal**
-  - Monitor customer ratings alongside pricing, discounts, and product information to identify areas where the customer experience can be improved.
+  - Monitor customer ratings alongside product category, traffic source, discounts, and purchasing behavior to identify areas where customer satisfaction may be improved.
 
 - **Improve return-risk data collection**
   - Shipping cost and discount percentage showed the strongest relative signals within the current return model.
   - Because predictive performance was weak, collect additional customer, fulfillment, and behavioral data before using return-risk predictions operationally.
 
-- **Identify high-value customers earlier**
-  - Use first-order purchase characteristics to score customers by their probability of becoming high-value.
-  - Prioritize higher-potential customers for retention campaigns and personalized offers.
+- **Strengthen customer retention efforts**
+  - Compare repeat and one-time customers based on cumulative profit, return behavior, and acquisition source.
+  - Prioritize retention strategies when repeat customers demonstrate stronger long-term profitability than continued reliance on new-customer acquisition.
 
-- **Plan around seasonal demand**
-  - Incorporate seasonal sales patterns into inventory, promotional, and marketing planning instead of treating demand as constant throughout the year.
+- **Use seasonal patterns to improve planning**
+  - Use observed monthly and quarterly sales patterns to support inventory, promotional, and marketing decisions.
+  - Focus planning around the strongest periods and product-category patterns identified in the analysis.
 
 # Limitations and Directions for Future Research
 
