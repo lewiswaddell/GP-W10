@@ -264,6 +264,9 @@ library(DALEX)
 library(DALEXtra)
 library(xgboost)
 
+raw <- read_csv("shopify_sales_dataset_ml_eda 2.csv")
+
+
 tidymodels_prefer()
 ```
 
@@ -285,7 +288,7 @@ tidymodels_prefer()
 #| message: false
 #| warning: false
 
-df <- read_csv("shopify_sales_dataset_ml_eda.csv") %>%
+df <- read_csv("shopify_sales_dataset_ml_eda 2.csv") %>%
   mutate(
     is_returned      = factor(is_returned, levels = c(0, 1), labels = c("No", "Yes")),
     product_category = as.factor(product_category)
