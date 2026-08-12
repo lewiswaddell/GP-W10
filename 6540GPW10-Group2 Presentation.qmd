@@ -102,7 +102,7 @@ This study uses machine learning to examine the major factors affecting profitab
 
 - **AO1 – Marketing Channel Performance:** Predict average order value (AOV) using traffic source and product category to identify the highest-value channel × category combinations.
 
-- **AO2 – Customer Satisfaction:** Examine how product, pricing, discount, and purchasing characteristics relate to customer ratings and satisfaction.
+- **AO2 – Customer Satisfaction:** Predict customer ratings using product category, product price, discount percentage, shipping cost, and traffic source to identify the factors most associated with customer satisfaction.
 
 - **AO3 – Product Returns:** Predict the likelihood of a product return using product category, discount percentage, shipping cost, and customer rating.
 
@@ -1193,9 +1193,9 @@ lda_preds |>
 - **Use customer satisfaction as an early performance signal**
   - Monitor customer ratings alongside pricing, discounts, and product information to identify areas where the customer experience can be improved.
 
-- **Reduce preventable return-related costs**
-  - Closely monitor shipping costs and discount levels when evaluating return risk.
-  - Use return-risk models as an early-warning tool rather than relying only on historical return reports.
+- **Improve return-risk data collection**
+  - Shipping cost and discount percentage showed the strongest relative signals within the current return model.
+  - Because predictive performance was weak, collect additional customer, fulfillment, and behavioral data before using return-risk predictions operationally.
 
 - **Identify high-value customers earlier**
   - Use first-order purchase characteristics to score customers by their probability of becoming high-value.

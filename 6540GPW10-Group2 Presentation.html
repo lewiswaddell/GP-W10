@@ -196,7 +196,7 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 <p>This study uses machine learning to examine the major factors affecting profitability, customer behavior, and business performance in Shopify e-commerce transactions.</p>
 <ul>
 <li><p><strong>AO1 – Marketing Channel Performance:</strong> Predict average order value (AOV) using traffic source and product category to identify the highest-value channel × category combinations.</p></li>
-<li><p><strong>AO2 – Customer Satisfaction:</strong> Examine how product, pricing, discount, and purchasing characteristics relate to customer ratings and satisfaction.</p></li>
+<li><p><strong>AO2 – Customer Satisfaction:</strong> Predict customer ratings using product category, product price, discount percentage, shipping cost, and traffic source to identify the factors most associated with customer satisfaction.</p></li>
 <li><p><strong>AO3 – Product Returns:</strong> Predict the likelihood of a product return using product category, discount percentage, shipping cost, and customer rating.</p></li>
 <li><p><strong>AO4 – Customer Value:</strong> Predict whether a new customer will become a high-value customer using information available from their first purchase.</p></li>
 <li><p><strong>AO5 – Seasonality:</strong> Analyze changes in sales performance over time to identify seasonal patterns that can support forecasting and marketing decisions.</p></li>
@@ -297,7 +297,7 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 
 <h2 id="data-wrangling-visualization">Data Wrangling &amp; Visualization</h2>
 <ul>
-<li>Impute missing values + winsorize AOV outliers</li>
+<li>Filter missing values; keep only valid orders (revenue &gt; 0)</li>
 <li>One-hot encode channel &amp; category; bin AOV into tiers</li>
 <li>Boxplots by channel, heatmap of mean AOV across channel × category</li>
 </ul>
@@ -316,9 +316,9 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 
 <h2 id="prediction-model-evaluation">Prediction &amp; Model Evaluation</h2>
 <ul>
-<li><strong>Regression:</strong> RMSE · MAE · R²</li>
-<li><strong>Classification:</strong> Accuracy · F1 · ROC-AUC · Confusion Matrix</li>
-<li>Select best model per task; evaluate on held-out test set</li>
+<li><strong>Regression:</strong> RMSE · R² via 5-fold cross-validation</li>
+<li>Linear Regression vs.&nbsp;Random Forest evaluated on the same folds</li>
+<li>Best model selected by lowest RMSE; evaluated on held-out test set</li>
 </ul>
 
 <img data-src="6540GPW10-Group2-Presentation_files/figure-revealjs/ao1-eval-1.png" width="864" class="r-stretch"></section>
@@ -326,10 +326,9 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 
 <h2 id="interpretation">Interpretation</h2>
 <ul>
-<li>Variable importance → top AOV-driving features</li>
-<li>PDPs → isolated effect of channel &amp; category on AOV</li>
-<li>SHAP → per-order prediction breakdown</li>
-<li>Interaction heatmap → predicted AOV for every channel × category pair</li>
+<li><strong>product_category_Electronics</strong> and <strong>traffic_source_Social.Media</strong> are the top AOV-driving features</li>
+<li>Social Media × Accessories drives the highest mean AOV (~$1,039) per the heatmap</li>
+<li>Channel and category together explain consistent AOV patterns across all 60,000 orders</li>
 </ul>
 
 <img data-src="6540GPW10-Group2-Presentation_files/figure-revealjs/ao1-vip-1.png" width="864" class="r-stretch"></section>
@@ -337,10 +336,10 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 
 <h2 id="summary-findings">Summary Findings</h2>
 <ul>
-<li><strong>[Channel X] × [Category Y]</strong> = highest predicted AOV across all models</li>
-<li>Ensembles beat linear models → non-linear interactions are significant</li>
-<li>SHAP &amp; PDPs confirm <strong>[top channel]</strong> and <strong>[top category]</strong> as key drivers</li>
-<li>Prioritize spend toward highest-AOV segments to maximize revenue per order</li>
+<li><strong>Social Media × Accessories</strong> = highest mean AOV (~$1,039) across all channel × category combinations</li>
+<li><strong>Electronics</strong> and <strong>Social Media</strong> are the top AOV-driving features per Random Forest variable importance</li>
+<li>Linear Regression and Random Forest achieve similar RMSE (~$800) → channel × category relationship is largely linear</li>
+<li>Prioritize marketing spend on <strong>Social Media → Electronics &amp; Accessories</strong> to maximize revenue per order</li>
 </ul>
 </section>
 <section id="analytics-objective-2" class="slide level1">
@@ -697,10 +696,10 @@ rf_fit  &lt;- fit(rf_wf,  data = train_data)</code></pre>
 <ul>
 <li>Monitor customer ratings alongside pricing, discounts, and product information to identify areas where the customer experience can be improved.</li>
 </ul></li>
-<li><strong>Reduce preventable return-related costs</strong>
+<li><strong>Improve return-risk data collection</strong>
 <ul>
-<li>Closely monitor shipping costs and discount levels when evaluating return risk.</li>
-<li>Use return-risk models as an early-warning tool rather than relying only on historical return reports.</li>
+<li>Shipping cost and discount percentage showed the strongest relative signals within the current return model.</li>
+<li>Because predictive performance was weak, collect additional customer, fulfillment, and behavioral data before using return-risk predictions operationally.</li>
 </ul></li>
 <li><strong>Identify high-value customers earlier</strong>
 <ul>
