@@ -596,11 +596,11 @@ ao2_metrics |>
   ) |>
   knitr::kable(
     col.names = c(
-      "Model",
-      "MAE",
-      "RMSE",
-      "R²"
-    ),
+  "Model",
+  "RMSE",
+  "MAE",
+  "R²"
+),
     caption = "AO2 Model Performance on Held-Out Test Data"
   )
 ```
