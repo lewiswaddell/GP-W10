@@ -249,117 +249,194 @@ highest order value.
 
 # Analytics Objective 3
 
-Predict **return risk (`is_returned`)** from category, discount,
-shipping cost & rating, and assess the downstream profit impact of
-high-risk orders.
+Predict **return risk (`is_returned`)** from category, discount, shipping cost & rating, and assess the downstream profit impact of high-risk orders.
 
-------------------------------------------------------------------------
+```{r}
+#| label: setup
+#| echo: false
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(tidymodels)
+library(discrim)
+library(DALEX)
+library(DALEXtra)
+library(xgboost)
+
+tidymodels_prefer()
+```
+
+---
 
 ## Machine Learning Methods
 
--   **Regression:** Logistic Regression *(binary outcome)*
--   **Classification:** LDA, QDA, KNN, Decision Tree
--   **Ensembles:** Bagged Trees, Random Forest, XGBoost
+- **Regression:** Logistic Regression *(binary outcome)*
+- **Classification:** LDA, QDA, KNN, Decision Tree
+- **Ensembles:** Bagged Trees, Random Forest, XGBoost
 
-------------------------------------------------------------------------
+---
 
 ## Data Wrangling & Visualization
 
--   Convert `is_returned` & `product_category` to factors; confirm zero
-    missing values
--   Stratify splits/CV on `is_returned` — \~15% return rate (class
-    imbalance)
--   Bar chart: return rate by category · Scatter: discount % vs. profit
--   Boxplot: rating by return status · Faceted bar: shipping cost by
-    country
+```{r}
+#| label: load-wrangle-data
+#| echo: false
+#| message: false
+#| warning: false
 
-------------------------------------------------------------------------
+df <- read_csv("shopify_sales_dataset_ml_eda.csv") %>%
+  mutate(
+    is_returned      = factor(is_returned, levels = c(0, 1), labels = c("No", "Yes")),
+    product_category = as.factor(product_category)
+  )
+```
+
+```{r}
+#| label: return-rate-by-category
+#| echo: false
+
+df %>%
+  group_by(product_category) %>%
+  summarise(return_rate = mean(is_returned == "Yes")) %>%
+  ggplot(aes(x = reorder(product_category, -return_rate), y = return_rate)) +
+  geom_col(fill = "steelblue") +
+  labs(x = "Product Category", y = "Return Rate", title = "Return Rate by Category") +
+  theme_minimal() +
+  coord_flip()
+```
+
+- Convert `is_returned` & `product_category` to factors; confirm zero missing values
+- Stratify splits/CV on `is_returned` — ~15% return rate (class imbalance)
+
+---
 
 ## Model Fitting
 
--   75/25 stratified split + 3–10 fold CV
--   Recipe: dummy-encode categoricals, zero/near-zero variance filter
-    *(no normalization for trees)*
--   Tune: cost complexity, mtry, trees, learn rate, neighbors (k)
+```{r}
+#| label: fit-model
+#| echo: false
+#| message: false
+#| warning: false
 
-------------------------------------------------------------------------
+set.seed(123)
+data_split <- initial_split(df, prop = 0.75, strata = is_returned)
+train_data <- training(data_split)
+test_data  <- testing(data_split)
+
+returns_recipe <- recipe(
+    is_returned ~ product_category + discount_percent + shipping_cost + rating,
+    data = train_data
+  ) %>%
+  step_dummy(all_nominal_predictors()) %>%
+  step_zv(all_predictors())
+
+boost_spec <- boost_tree(trees = 50) %>%
+  set_engine("xgboost") %>%
+  set_mode("classification")
+
+boost_wf  <- workflow() %>% add_recipe(returns_recipe) %>% add_model(boost_spec)
+boost_fit <- fit(boost_wf, data = train_data)
+```
+
+- 75/25 stratified split + 3–10 fold CV
+- Recipe: dummy-encode categoricals, zero/near-zero variance filter *(no normalization for trees)*
+- Tune: cost complexity, mtry, trees, learn rate, neighbors (k)
+
+---
 
 ## Prediction and Model Evaluation
 
--   **Primary metric:** ROC AUC, 10-fold CV mean *(class imbalance makes
-    accuracy misleading)*
--   Confusion Matrix · Sensitivity/Specificity per model
--   Best model by CV `roc_auc` → **XGBoost** *(margin over runner-up
-    discussed in Summary Findings)*
+- **Primary metric:** ROC AUC, 10-fold CV mean *(class imbalance makes accuracy misleading)*
+- Confusion Matrix · Sensitivity/Specificity per model
+- Best model by CV `roc_auc` → **XGBoost** *(margin over runner-up discussed in Summary Findings)*
 
-------------------------------------------------------------------------
+---
 
 ## Interpretation
 
--   SHAP (`predict_parts()`) → `shipping_cost` ranks #1, ahead of
-    `discount_percent` *(ranking taken with the predictive-strength
-    caveat in Summary Findings)*
--   PDPs → isolated effect of discount % and shipping cost on return
-    probability
--   Variable importance (manual `ggplot2`, `xgb.importance()`) confirms
-    SHAP ranking
--   Framing: discount % & shipping cost = pre-purchase levers; rating =
-    post-purchase signal
+```{r}
+#| label: shap-generation
+#| echo: false
+#| message: false
+#| warning: false
 
-------------------------------------------------------------------------
+xgb_engine <- extract_fit_engine(boost_fit)
+
+set.seed(123)
+shap_sample <- train_data[sample(nrow(train_data), 50), ]
+
+xgb_explainer <- explain_tidymodels(
+  boost_fit,
+  data = shap_sample %>% select(product_category, discount_percent, shipping_cost, rating),
+  y = as.numeric(shap_sample$is_returned) - 1,
+  label = "XGBoost",
+  verbose = FALSE
+)
+
+shap_results <- purrr::map_dfr(1:nrow(shap_sample), function(i) {
+  sp <- predict_parts(xgb_explainer, new_observation = shap_sample[i, ], type = "shap", B = 25)
+  as.data.frame(sp) %>% mutate(obs_id = i)
+})
+
+shap_summary <- shap_results %>%
+  group_by(variable_name) %>%
+  summarise(mean_abs_shap = mean(abs(contribution)), .groups = "drop") %>%
+  arrange(desc(mean_abs_shap))
+```
+
+```{r}
+#| label: shap-summary
+#| echo: false
+
+ggplot(shap_summary, aes(x = reorder(variable_name, mean_abs_shap), y = mean_abs_shap)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Mean |SHAP Value| by Feature", x = "Feature", y = "Mean |SHAP value|") +
+  theme_minimal()
+```
+
+```{r}
+#| label: variable-importance
+#| echo: false
+
+importance_matrix <- xgboost::xgb.importance(model = xgb_engine)
+
+ggplot(importance_matrix, aes(x = reorder(Feature, Gain), y = Gain)) +
+  geom_col(fill = "darkorange") +
+  coord_flip() +
+  labs(title = "XGBoost Variable Importance (Gain)", x = "Feature", y = "Gain") +
+  theme_minimal()
+```
+
+- SHAP (`predict_parts()`) → `shipping_cost` ranks #1, ahead of `discount_percent` *(ranking taken with the predictive-strength caveat in Summary Findings)*
+- Variable importance (manual `ggplot2`, `xgb.importance()`) confirms SHAP ranking
+- Framing: discount % & shipping cost = pre-purchase levers; rating = post-purchase signal
+
+---
 
 ## Summary Findings
 
--   **XGBoost** = top model by 10-fold CV, ROC AUC = **0.509** (SE ≈
-    0.003) — narrowly ahead of Lasso Logistic Regression (0.505),
-    Decision Tree (0.503), and Random Forest (0.501), though the margin
-    is within one standard error of the runner-up, so the lead is not
-    statistically decisive
--   **Shipping cost**, not discount or category, is the leading
-    return-risk driver → diverges from original hypothesis
--   SHAP & PDPs confirm shipping cost and discount % as key, actionable
-    drivers
--   Deployed as a self-contained client-side calculator for pre-purchase
-    return-risk scoring
--   Profit impact: On average, a **returned order carries \~\$87 in sunk
-    shipping and discount cost** (avg. shipping cost ≈ \$13.44 + avg.
-    discount amount ≈ \$73.74) that is spent regardless of the return,
-    with **no offsetting revenue retained**. Applied across the 8,887
-    returned orders (14.8% of the 60,000-order dataset), this represents
-    roughly **\$775K in aggregate sunk cost** tied to returns. Notably,
-    raw profit-per-order is nearly identical between returned (\$974.81)
-    and kept (\$981.58) orders — the \~\$6.77 gap is small, reinforcing
-    that return risk in this dataset is not driven by a large per-order
-    profit penalty on its own, but by the compounding volume of returns
-    at scale. This closes the loop on the opening objective: even a
-    modest per-order sunk cost becomes a meaningful margin drain in
-    aggregate, which is exactly the kind of pattern a pre-purchase
-    risk-scoring calculator (Section 2.2) is designed to intercept
-    before shipping and discount costs are locked in.
-
-------------------------------------------------------------------------
-
-## Summary Findings
+- **XGBoost** = top model by 10-fold CV, ROC AUC = **0.509** (SE ≈ 0.003) — narrowly ahead of Lasso Logistic Regression (0.505), Decision Tree (0.503), and Random Forest (0.501), though the margin is within one standard error of the runner-up, so the lead is not statistically decisive
+- **Shipping cost**, not discount or category, is the leading return-risk driver → diverges from original hypothesis
+- SHAP & PDPs confirm shipping cost and discount % as key, actionable drivers
+- Deployed as a self-contained client-side calculator for pre-purchase return-risk scoring
+- Profit impact: On average, a **returned order carries ~$87 in sunk shipping and discount cost** (avg. shipping cost ≈ \$13.44 + avg. discount amount ≈ \$73.74) that is spent regardless of the return, with **no offsetting revenue retained**. Applied across the 8,887 returned orders (14.8% of the 60,000-order dataset), this represents roughly **\$775K in aggregate sunk cost** tied to returns. Notably, raw profit-per-order is nearly identical between returned (\$974.81) and kept (\$981.58) orders — the ~\$6.77 gap is small, reinforcing that return risk in this dataset is not driven by a large per-order profit penalty on its own, but by the compounding volume of returns at scale. This closes the loop on the opening objective: even a modest per-order sunk cost becomes a meaningful margin drain in aggregate, which is exactly the kind of pattern a pre-purchase risk-scoring calculator (Section 2.2) is designed to intercept before shipping and discount costs are locked in.
 
 ::: {.callout-note title="On model selection"}
-Per the decision rule stated earlier in this document
-(@sec-cv-comparison), a lead smaller than one SE would favor **Lasso
-LR** on parsimony grounds. XGBoost is retained here as the deployed
-model primarily for its PDP/SHAP interpretability story and consistency
-with the group's established modeling narrative, not because its CV
-performance is meaningfully superior.
+Per the decision rule stated earlier in this document (@sec-cv-comparison), a lead smaller than one SE would favor **Lasso LR** on parsimony grounds. XGBoost is retained here as the deployed model primarily for its PDP/SHAP interpretability story and consistency with the group's established modeling narrative, not because its CV performance is meaningfully superior.
 :::
 
 ::: {.callout-warning title="On predictive strength"}
-An ROC AUC of \~0.51 is only marginally above chance (0.50), meaning
-none of the four candidate models — including XGBoost — meaningfully
-separate returned from non-returned orders using this feature set alone.
-The SHAP ranking (`shipping_cost` \> `discount_percent` \> `rating` \>
-`product_category`) should be read as a relative signal within a weak
-model, not as strong evidence that shipping cost drives returns in
-practice. This constrains how confidently the client recommendations
-above can be stated and points to the feature-set limitation noted in
-the group's Limitations & Future Research section.
+An ROC AUC of ~0.51 is only marginally above chance (0.50), meaning none of
+the four candidate models — including XGBoost — meaningfully separate
+returned from non-returned orders using this feature set alone. The SHAP
+ranking (`shipping_cost` > `discount_percent` > `rating` > `product_category`)
+should be read as a relative signal within a weak model, not as strong
+evidence that shipping cost drives returns in practice. This constrains how
+confidently the client recommendations above can be stated and points to the
+feature-set limitation noted in the group's Limitations & Future Research
+section.
 :::
 
 # Analytics Objective 4
