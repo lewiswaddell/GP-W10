@@ -203,7 +203,7 @@ df_ro1 <- df |>
 
 ## Data Wrangling & Visualization
 
-- Impute missing values + winsorize AOV outliers
+- Filter missing values; keep only valid orders (revenue > 0)
 - One-hot encode channel & category; bin AOV into tiers
 - Boxplots by channel, heatmap of mean AOV across channel × category
 
@@ -237,9 +237,9 @@ df_ro1 |>
 
 ## Prediction & Model Evaluation
 
-- **Regression:** RMSE · MAE · R²
-- **Classification:** Accuracy · F1 · ROC-AUC · Confusion Matrix
-- Select best model per task; evaluate on held-out test set
+- **Regression:** RMSE · R² via 5-fold cross-validation
+- Linear Regression vs. Random Forest evaluated on the same folds
+- Best model selected by lowest RMSE; evaluated on held-out test set
 
 ```{r ao1-eval}
 #| echo: false
@@ -287,10 +287,9 @@ bind_rows(lm_res, rf_res) |>
 
 ## Interpretation
 
-- Variable importance → top AOV-driving features
-- PDPs → isolated effect of channel & category on AOV
-- SHAP → per-order prediction breakdown
-- Interaction heatmap → predicted AOV for every channel × category pair
+- **product_category_Electronics** and **traffic_source_Social.Media** are the top AOV-driving features
+- Social Media × Accessories drives the highest mean AOV (~$1,039) per the heatmap
+- Channel and category together explain consistent AOV patterns across all 60,000 orders
 
 ```{r ao1-vip}
 #| echo: false
@@ -324,14 +323,10 @@ rf_fit |>
 
 ## Summary Findings
 
--   **\[Channel X\] × \[Category Y\]** = highest predicted AOV across
-    all models
--   Ensembles beat linear models → non-linear interactions are
-    significant
--   SHAP & PDPs confirm **\[top channel\]** and **\[top category\]** as
-    key drivers
--   Prioritize spend toward highest-AOV segments to maximize revenue per
-    order
+- **Social Media × Accessories** = highest mean AOV (~$1,039) across all channel × category combinations
+- **Electronics** and **Social Media** are the top AOV-driving features per Random Forest variable importance
+- Linear Regression and Random Forest achieve similar RMSE (~$800) → channel × category relationship is largely linear
+- Prioritize marketing spend on **Social Media → Electronics & Accessories** to maximize revenue per order
 
 # Analytics Objective 2
 
