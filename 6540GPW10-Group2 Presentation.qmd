@@ -1,6 +1,6 @@
 ---
 title: "Predicting Profitability, Returns, and Customer Value in Shopify Sales"
-subtitle: "Shopify Sales Dataset for ML & EDA"
+subtitle: "Final Report"
 author: "**Group 2:** <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen Sabilla, Brian Vuong"
 format:
   revealjs: 
@@ -12,6 +12,136 @@ format:
     height: 720
     margin: 0.2
     min-scale: 0.2
-    max-scale: .40
+    max-scale: .80
 footer: "IBM6540 | August 12, 2026"
 ---
+
+# Table of Contents
+
+# Introduction
+
+-   Problem definition
+
+-   Research objectives
+
+-   Importance of the research
+
+-   Population / Sample
+
+-   Sample Characteristics
+
+# Analytics Objective 1
+
+-   Machine learning methods to be used
+
+    -   Regression-Focused Methods
+
+    -   Classification-Focused Methods
+
+    -   Ensembles
+
+-   Data wrangling & visualization
+
+-   Model fitting (including Data splitting, recipe creation, & model specification)
+
+-   Prediction and model evaluation
+
+-   Interpretation (e.g., Variable importance, PDP, SHAP values, etc.)
+
+-   Summary Findings
+
+# Analytics Objective 2
+
+-   Machine learning methods to be used
+
+    -   Regression-Focused Methods
+
+    -   Classification-Focused Methods
+
+    -   Ensembles
+
+-   Data wrangling & visualization
+
+-   Model fitting (including Data splitting, recipe creation, & model specification)
+
+-   Prediction and model evaluation
+
+-   Interpretation (e.g., Variable importance, PDP, SHAP values, etc.)
+
+-   Summary Findings
+
+# Analytics Objective 3
+
+-   Machine learning methods to be used
+
+    -   Regression-Focused Methods
+
+    -   Classification-Focused Methods
+
+    -   Ensembles
+
+-   Data wrangling & visualization
+
+-   Model fitting (including Data splitting, recipe creation, & model specification)
+
+-   Prediction and model evaluation
+
+-   Interpretation (e.g., Variable importance, PDP, SHAP values, etc.)
+
+-   Summary Findings
+
+# Analytics Objective 4
+
+-   Machine learning methods to be used
+
+    -   Regression-Focused Methods
+
+    -   Classification-Focused Methods
+
+    -   Ensembles
+
+-   Data wrangling & visualization
+
+-   Model fitting (including Data splitting, recipe creation, & model specification)
+
+-   Prediction and model evaluation
+
+-   Interpretation (e.g., Variable importance, PDP, SHAP values, etc.)
+
+-   Summary Findings
+
+# Analytics Objective 5
+
+-   Machine learning methods to be used
+
+    -   Regression-Focused Methods
+
+    -   Classification-Focused Methods
+
+    -   Ensembles
+
+-   Data wrangling & visualization
+
+-   Model fitting (including Data splitting, recipe creation, & model specification)
+
+-   Prediction and model evaluation
+
+-   Interpretation (e.g., Variable importance, PDP, SHAP values, etc.)
+
+-   Summary Findings
+
+# Conclusion
+
+-   Key Findings
+
+-   Recommendations for Businesses
+
+-   Limitations and Directions for Future Research
+
+# Appendix
+
+-   GitHub Repo
+
+-   Presentation Slides
+
+-   Deployed Model and URL (Shiny App or Vertiver)
