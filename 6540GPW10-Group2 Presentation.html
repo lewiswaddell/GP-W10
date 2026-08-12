@@ -175,7 +175,15 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 <li><p>Problem definition</p></li>
 <li><p>Research objectives</p></li>
 </ul>
-<p>Importance of the research</p>
+<p>&lt;&lt;&lt;&lt;&lt;&lt;&lt; Updated upstream ## Importance of the Research</p>
+<ul>
+<li class="fragment">Online retailers pour money into acquisition and discounting, but <strong>returns quietly erode net profit margins</strong> after the sale is already booked as revenue</li>
+<li class="fragment">Every returned order carries a <strong>sunk cost</strong> — the discount was given, the item shipped, and now the shipping cost and processing overhead are absorbed with no revenue to show for it</li>
+<li class="fragment">Without a predictive view of <em>which</em> orders are likely to be returned, businesses can only react to returns after they happen — not prevent them</li>
+<li class="fragment">Identifying the strongest drivers of return risk (<code>product_category</code>, <code>discount_percent</code>, <code>shipping_cost</code>, <code>rating</code>) turns returns from a lagging cost into an <strong>actionable, pre-purchase signal</strong></li>
+<li class="fragment">This directly supports the broader group narrative: margin compression isn’t just a discounting problem or a marketing problem — it’s also a <strong>returns problem</strong>, and this objective isolates that piece</li>
+</ul>
+<p>======= Importance of the research &gt;&gt;&gt;&gt;&gt;&gt;&gt; Stashed changes</p>
 </section>
 <section id="population-sample" class="slide level1">
 <h1>Population / Sample</h1>
@@ -322,8 +330,26 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 <ul>
 <li><p>Key Findings</p></li>
 <li><p>Recommendations for Businesses</p></li>
-<li><p>Limitations and Directions for Future Research</p></li>
 </ul>
+<h2 id="limitations-and-directions-for-future-research">Limitations and Directions for Future Research</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<h3 id="limitations">Limitations</h3>
+<ul>
+<li class="fragment">Predictive scope was intentionally narrow — only four features (<code>product_category</code>, <code>discount_percent</code>, <code>shipping_cost</code>, <code>rating</code>) were used, so drivers like customer history, marketing channel, or seasonality aren’t captured</li>
+<li class="fragment">Kaggle notes the dataset is “realistic” rather than verified, meaning it is likely synthetic — patterns may not generalize to real Shopify order data</li>
+<li class="fragment">Returns are a minority class (~15%), which caps achievable sensitivity even after optimizing for ROC AUC</li>
+<li class="fragment">The deployed calculator reflects a single static training snapshot — it does not retrain or adapt as new orders come in</li>
+</ul>
+</div><div class="column" style="width:50%;">
+<h3 id="future-research">Future Research</h3>
+<ul>
+<li class="fragment">Validate the model against real, non-synthetic transaction data before any operational use</li>
+<li class="fragment">Expand the feature set (customer purchase history, traffic source, seasonality) to test whether <code>shipping_cost</code>’s unexpected top-ranked SHAP importance holds</li>
+<li class="fragment">Explore cost-sensitive classification thresholds tied to actual return-processing costs, rather than a default 0.5 cutoff</li>
+<li class="fragment">Build a monitoring/retraining pipeline to catch model drift once deployed in production</li>
+</ul>
+</div></div>
 </section>
 <section id="appendix" class="slide level1">
 <h1>Appendix</h1>
