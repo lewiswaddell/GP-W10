@@ -348,46 +348,207 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
 </section>
 <section id="analytics-objective-3" class="slide level1">
 <h1>Analytics Objective 3</h1>
+<p>Predict <strong>return risk (<code>is_returned</code>)</strong> from category, discount, shipping cost &amp; rating, and assess the downstream profit impact of high-risk orders.</p>
+</section>
+<section class="slide level1">
+
+<h2 id="machine-learning-methods-1">Machine Learning Methods</h2>
 <ul>
-<li><p>Machine learning methods to be used</p>
-<ul>
-<li><p>Regression-Focused Methods</p></li>
-<li><p>Classification-Focused Methods</p></li>
-<li><p>Ensembles</p></li>
-</ul></li>
-<li><p>Data wrangling &amp; visualization</p></li>
-<li><p>Model fitting (including Data splitting, recipe creation, &amp; model specification)</p></li>
-<li><p>Prediction and model evaluation</p></li>
-<li><p>Interpretation (e.g., Variable importance, PDP, SHAP values, etc.)</p></li>
-<li><p>Summary Findings</p></li>
+<li><strong>Regression:</strong> Logistic Regression <em>(binary outcome)</em></li>
+<li><strong>Classification:</strong> LDA, QDA, KNN, Decision Tree</li>
+<li><strong>Ensembles:</strong> Bagged Trees, Random Forest, XGBoost</li>
 </ul>
+</section>
+<section class="slide level1">
+
+<h2 id="data-wrangling-visualization-1">Data Wrangling &amp; Visualization</h2>
+<ul>
+<li>Convert <code>is_returned</code> &amp; <code>product_category</code> to factors; confirm zero missing values</li>
+<li>Stratify splits/CV on <code>is_returned</code> — ~15% return rate (class imbalance)</li>
+<li>Bar chart: return rate by category · Scatter: discount % vs.&nbsp;profit</li>
+<li>Boxplot: rating by return status · Faceted bar: shipping cost by country</li>
+</ul>
+</section>
+<section class="slide level1">
+
+<h2 id="model-fitting-1">Model Fitting</h2>
+<ul>
+<li>75/25 stratified split + 3–10 fold CV</li>
+<li>Recipe: dummy-encode categoricals, zero/near-zero variance filter <em>(no normalization for trees)</em></li>
+<li>Tune: cost complexity, mtry, trees, learn rate, neighbors (k)</li>
+</ul>
+</section>
+<section class="slide level1">
+
+<h2 id="prediction-and-model-evaluation">Prediction and Model Evaluation</h2>
+<ul>
+<li><strong>Primary metric:</strong> ROC AUC, 10-fold CV mean <em>(class imbalance makes accuracy misleading)</em></li>
+<li>Confusion Matrix · Sensitivity/Specificity per model</li>
+<li>Best model by CV <code>roc_auc</code> → <strong>XGBoost</strong> <em>(margin over runner-up discussed in Summary Findings)</em></li>
+</ul>
+</section>
+<section class="slide level1">
+
+<h2 id="interpretation-1">Interpretation</h2>
+<ul>
+<li>SHAP (<code>predict_parts()</code>) → <code>shipping_cost</code> ranks #1, ahead of <code>discount_percent</code> <em>(ranking taken with the predictive-strength caveat in Summary Findings)</em></li>
+<li>PDPs → isolated effect of discount % and shipping cost on return probability</li>
+<li>Variable importance (manual <code>ggplot2</code>, <code>xgb.importance()</code>) confirms SHAP ranking</li>
+<li>Framing: discount % &amp; shipping cost = pre-purchase levers; rating = post-purchase signal</li>
+</ul>
+</section>
+<section class="slide level1">
+
+<h2 id="summary-findings-1">Summary Findings</h2>
+<ul>
+<li><strong>XGBoost</strong> = top model by 10-fold CV, ROC AUC = <strong>0.509</strong> (SE ≈ 0.003) — narrowly ahead of Lasso Logistic Regression (0.505), Decision Tree (0.503), and Random Forest (0.501), though the margin is within one standard error of the runner-up, so the lead is not statistically decisive</li>
+<li><strong>Shipping cost</strong>, not discount or category, is the leading return-risk driver → diverges from original hypothesis</li>
+<li>SHAP &amp; PDPs confirm shipping cost and discount % as key, actionable drivers</li>
+<li>Deployed as a self-contained client-side calculator for pre-purchase return-risk scoring</li>
+<li>Profit impact: On average, a <strong>returned order carries ~$87 in sunk shipping and discount cost</strong> (avg. shipping cost ≈ $13.44 + avg. discount amount ≈ $73.74) that is spent regardless of the return, with <strong>no offsetting revenue retained</strong>. Applied across the 8,887 returned orders (14.8% of the 60,000-order dataset), this represents roughly <strong>$775K in aggregate sunk cost</strong> tied to returns. Notably, raw profit-per-order is nearly identical between returned ($974.81) and kept ($981.58) orders — the ~$6.77 gap is small, reinforcing that return risk in this dataset is not driven by a large per-order profit penalty on its own, but by the compounding volume of returns at scale. This closes the loop on the opening objective: even a modest per-order sunk cost becomes a meaningful margin drain in aggregate, which is exactly the kind of pattern a pre-purchase risk-scoring calculator (Section 2.2) is designed to intercept before shipping and discount costs are locked in.</li>
+</ul>
+</section>
+<section class="slide level1">
+
+<h2 id="summary-findings-2">Summary Findings</h2>
+<div title="On model selection">
+<div class="callout callout-note callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>On model selection</strong></p>
+</div>
+<div class="callout-content">
+<p>Per the decision rule stated earlier in this document (<strong>?@sec-cv-comparison</strong>), a lead smaller than one SE would favor <strong>Lasso LR</strong> on parsimony grounds. XGBoost is retained here as the deployed model primarily for its PDP/SHAP interpretability story and consistency with the group’s established modeling narrative, not because its CV performance is meaningfully superior.</p>
+</div>
+</div>
+</div>
+</div>
+<div title="On predictive strength">
+<div class="callout callout-warning callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>On predictive strength</strong></p>
+</div>
+<div class="callout-content">
+<p>An ROC AUC of ~0.51 is only marginally above chance (0.50), meaning none of the four candidate models — including XGBoost — meaningfully separate returned from non-returned orders using this feature set alone. The SHAP ranking (<code>shipping_cost</code> &gt; <code>discount_percent</code> &gt; <code>rating</code> &gt; <code>product_category</code>) should be read as a relative signal within a weak model, not as strong evidence that shipping cost drives returns in practice. This constrains how confidently the client recommendations above can be stated and points to the feature-set limitation noted in the group’s Limitations &amp; Future Research section.</p>
+</div>
+</div>
+</div>
+</div>
 </section>
 <section id="analytics-objective-4" class="slide level1">
 <h1>Analytics Objective 4</h1>
+<p>Predict whether a new customer will become <strong>high-value</strong> (top-quartile lifetime profit) from their first order’s <code>product_price</code> and <code>discount_percent</code>, so the business can flag high-potential customers before their full purchase history accumulates.</p>
+</section>
+<section id="machine-learning-methods-2" class="slide level1">
+<h1>Machine Learning Methods</h1>
 <ul>
-<li><p>Machine learning methods to be used</p>
+<li>Classification: LDA (primary), QDA &amp; Naïve Bayes tested for comparison</li>
+<li>Ensembles: Random Forest</li>
+<li>Regression: not used — outcome is binary (<code>high_value</code>), not continuous</li>
+</ul>
+</section>
+<section id="data-wrangling-visualization-2" class="slide level1">
+<h1>Data Wrangling &amp; Visualization</h1>
 <ul>
-<li><p>Regression-Focused Methods</p></li>
-<li><p>Classification-Focused Methods</p></li>
-<li><p>Ensembles</p></li>
-</ul></li>
-<li><p>Data wrangling &amp; visualization</p></li>
-<li><p>Model fitting (including Data splitting, recipe creation, &amp; model specification)</p></li>
-<li><p>Prediction and model evaluation</p></li>
-<li><p>Interpretation (e.g., Variable importance, PDP, SHAP values, etc.)</p></li>
-<li><p>Summary Findings</p></li>
+<li>Aggregate to customer level; derive <code>cumulative_profit</code> = sum of <code>profit</code> per <code>customer_id</code></li>
+<li>Label <code>high_value</code> = 1 if <code>cumulative_profit</code> ≥ 75th percentile ($2,698.35) → 7,789/31,154 customers (~25%)</li>
+<li>Isolate each customer’s first order (<code>arrange</code> + <code>slice(1)</code>) for <code>product_price</code>, <code>discount_percent</code> — no post-purchase leakage</li>
+<li><code>product_category</code> and acquisition <code>traffic_source</code> tested and dropped (ANOVA p = 0.41, p = 0.15 — no significant effect on profit)</li>
+<li>Scatterplot: price vs.&nbsp;cumulative profit, colored by <code>high_value</code> · Boxplot: discount % by <code>high_value</code> status</li>
+</ul>
+</section>
+<section id="data-wrangling-visualization-3" class="slide level1">
+<h1>Data Wrangling &amp; Visualization</h1>
+
+<img data-src="6540GPW10-Group2-Presentation_files/figure-revealjs/fig-ao4-wrangling-1.png" width="960" class="r-stretch quarto-figure-center" id="fig-ao4-wrangling"><p class="caption">
+Figure&nbsp;1: First-order price and discount by customer value
+</p></section>
+<section id="model-fitting-2" class="slide level1">
+<h1>Model Fitting</h1>
+<ul>
+<li>80/20 stratified split on <code>high_value</code> (class balance preserved by construction, ~25/75)</li>
+<li>Recipe: <code>step_normalize()</code> on both predictors — no dummy step needed (no categoricals retained)</li>
+<li>No tuning parameters for LDA; <code>mtry</code>/<code>trees</code> left at tidymodels defaults for Random Forest (baseline comparison only, not the deployed model)</li>
+</ul>
+</section>
+<section id="model-fitting-3" class="slide level1">
+<h1>Model Fitting</h1>
+<pre><code>library(discrim)
+library(ranger)
+
+set.seed(2025)
+  split &lt;- initial_split(model_data, prop = 0.80, strata = high_value)
+  train_data &lt;- training(split)
+  test_data  &lt;- testing(split)
+
+hv_recipe &lt;- recipe(high_value ~ product_price + discount_percent + customer_id, data = train_data) |&gt;
+  update_role(customer_id, new_role = "ID") |&gt;
+  step_normalize(all_numeric_predictors())
+
+lda_wf &lt;- workflow() |&gt; 
+  add_recipe(hv_recipe) |&gt; 
+  add_model(discrim_linear() |&gt; 
+  set_engine("MASS") |&gt; 
+  set_mode("classification"))
+  
+rf_wf  &lt;- workflow() |&gt; 
+  add_recipe(hv_recipe) |&gt; 
+  add_model(rand_forest(trees = 300) |&gt; 
+  set_engine("ranger", importance = "impurity") |&gt; 
+  set_mode("classification"))
+
+lda_fit &lt;- fit(lda_wf, data = train_data)
+rf_fit  &lt;- fit(rf_wf,  data = train_data)</code></pre>
+</section>
+<section id="prediction-model-evaluation-1" class="slide level1">
+<h1>Prediction &amp; Model Evaluation</h1>
+<ul>
+<li>Primary metric: ROC AUC on held-out test set</li>
+<li>LDA AUC = <strong>0.679</strong> vs.&nbsp;Random Forest AUC = <strong>0.590</strong> → LDA selected (added tree complexity not justified; relationship is linear)</li>
+<li>At default 0.5 cutoff, high-value recall is low (~5%) due to class imbalance — deployed version scores by <strong>probability</strong>, not hard class, so the business sets its own targeting threshold (e.g., top 20%)</li>
+</ul>
+</section>
+<section id="prediction-model-evaluation-2" class="slide level1">
+<h1>Prediction &amp; Model Evaluation</h1>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 4
+  model           sens  spec roc_auc
+  &lt;chr&gt;          &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;
+1 LDA           0.0546 0.990   0.683
+2 Random Forest 0.101  0.977   0.674</code></pre>
+</div>
+
+</div>
+<img data-src="6540GPW10-Group2-Presentation_files/figure-revealjs/unnamed-chunk-1-1.png" width="960" class="r-stretch"></section>
+<section id="interpretation-2" class="slide level1">
+<h1>Interpretation</h1>
+<ul>
+<li>Class-conditional means: high-value customers’ first orders average higher price, lower discount than non-high-value</li>
+<li>PDP: predicted probability rises with price, falls with discount depth — both roughly linear</li>
+<li>Random Forest variable importance confirms <code>product_price</code> &gt; <code>discount_percent</code>, consistent with LDA’s separating structure</li>
+</ul>
+</section>
+<section id="summary-findings-3" class="slide level1">
+<h1>Summary Findings</h1>
+<ul>
+<li>LDA = best model, ROC AUC = 0.679 vs.&nbsp;Random Forest 0.590 — a real, meaningful gap (not within-noise like AO3’s model comparison)</li>
+<li>Acquisition channel and product category showed <strong>no</strong> relationship to customer value in this dataset (p = 0.15, p = 0.41) — diverges from original hypothesis, which assumed channel mattered</li>
+<li>First-order price and discount depth are the actionable, pre-purchase levers driving predicted customer value</li>
+<li>Deployed as a probability-scoring model (<code>high_value_model.joblib</code> + <code>predict.py</code>) — customer’s first-order price/discount in, high-value probability out, business sets its own targeting cutoff</li>
 </ul>
 </section>
 <section id="analytics-objective-5" class="slide level1">
 <h1>Analytics Objective 5</h1>
 <ul>
-<li><p>Machine learning methods to be used</p>
-<ul>
-<li><p>Regression-Focused Methods</p></li>
-<li><p>Classification-Focused Methods</p></li>
-<li><p>Ensembles</p></li>
-</ul></li>
-<li><p>Data wrangling &amp; visualization</p></li>
+<li><p>Machine learning methods to be used</p></li>
 <li><p>Model fitting (including Data splitting, recipe creation, &amp; model specification)</p></li>
 <li><p>Prediction and model evaluation</p></li>
 <li><p>Interpretation (e.g., Variable importance, PDP, SHAP values, etc.)</p></li>
@@ -659,6 +820,44 @@ Group 2: <br> Kevin Bachez, Alexa Bueno, Leeann Lewis-Waddell, <br> Ron Stephen 
         ]
       });
     </script>
+    
+    <script>
+      // htmlwidgets need to know to resize themselves when slides are shown/hidden.
+      // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
+      // slide changes (different for each slide format).
+      (function () {
+        // dispatch for htmlwidgets
+        function fireSlideEnter() {
+          const event = window.document.createEvent("Event");
+          event.initEvent("slideenter", true, true);
+          window.document.dispatchEvent(event);
+        }
+
+        function fireSlideChanged(previousSlide, currentSlide) {
+          fireSlideEnter();
+
+          // dispatch for shiny
+          if (window.jQuery) {
+            if (previousSlide) {
+              window.jQuery(previousSlide).trigger("hidden");
+            }
+            if (currentSlide) {
+              window.jQuery(currentSlide).trigger("shown");
+            }
+          }
+        }
+
+        // hookup for slidy
+        if (window.w3c_slidy) {
+          window.w3c_slidy.add_observer(function (slide_num) {
+            // slide_num starts at position 1
+            fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
+          });
+        }
+
+      })();
+    </script>
+
     <script id="quarto-html-after-body" type="application/javascript">
       window.document.addEventListener("DOMContentLoaded", function (event) {
         const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
