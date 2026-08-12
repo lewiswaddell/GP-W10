@@ -69,7 +69,15 @@ footer: "IBM6540 | August 12, 2026"
 
 -   Research objectives
 
--   Importance of the research
+## Importance of the Research
+
+::: {.incremental}
+- Online retailers pour money into acquisition and discounting, but **returns quietly erode net profit margins** after the sale is already booked as revenue
+- Every returned order carries a **sunk cost** — the discount was given, the item shipped, and now the shipping cost and processing overhead are absorbed with no revenue to show for it
+- Without a predictive view of *which* orders are likely to be returned, businesses can only react to returns after they happen — not prevent them
+- Identifying the strongest drivers of return risk (`product_category`, `discount_percent`, `shipping_cost`, `rating`) turns returns from a lagging cost into an **actionable, pre-purchase signal**
+- This directly supports the broader group narrative: margin compression isn't just a discounting problem or a marketing problem — it's also a **returns problem**, and this objective isolates that piece
+:::
 
 -   Population / Sample
 
@@ -181,7 +189,33 @@ footer: "IBM6540 | August 12, 2026"
 
 -   Recommendations for Businesses
 
--   Limitations and Directions for Future Research
+## Limitations and Directions for Future Research
+
+::: {.columns}
+
+::: {.column width="50%"}
+### Limitations
+
+::: {.incremental}
+- Predictive scope was intentionally narrow — only four features (`product_category`, `discount_percent`, `shipping_cost`, `rating`) were used, so drivers like customer history, marketing channel, or seasonality aren't captured
+- Kaggle notes the dataset is "realistic" rather than verified, meaning it is likely synthetic — patterns may not generalize to real Shopify order data
+- Returns are a minority class (~15%), which caps achievable sensitivity even after optimizing for ROC AUC
+- The deployed calculator reflects a single static training snapshot — it does not retrain or adapt as new orders come in
+:::
+:::
+
+::: {.column width="50%"}
+### Future Research
+
+::: {.incremental}
+- Validate the model against real, non-synthetic transaction data before any operational use
+- Expand the feature set (customer purchase history, traffic source, seasonality) to test whether `shipping_cost`'s unexpected top-ranked SHAP importance holds
+- Explore cost-sensitive classification thresholds tied to actual return-processing costs, rather than a default 0.5 cutoff
+- Build a monitoring/retraining pipeline to catch model drift once deployed in production
+:::
+:::
+
+:::
 
 # Appendix
 
