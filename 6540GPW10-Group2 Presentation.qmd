@@ -180,12 +180,50 @@ highest order value.
 -   **Ensembles:** Random Forest, XGBoost, Bagged Trees
 
 ------------------------------------------------------------------------
+```{r ao1-setup}
+#| include: false
+
+library(tidyverse)
+library(tidymodels)
+library(janitor)
+set.seed(2024)
+
+df_raw <- read_csv("shopify_sales_dataset_ml_eda 2.csv", show_col_types = FALSE)
+df     <- df_raw |> clean_names()
+
+df_ro1 <- df |>
+  select(revenue, traffic_source, product_category) |>
+  filter(!is.na(revenue), !is.na(traffic_source),
+         !is.na(product_category), revenue > 0) |>
+  mutate(
+    traffic_source   = factor(traffic_source),
+    product_category = factor(product_category)
+  )
+```
 
 ## Data Wrangling & Visualization
 
--   Impute missing values + winsorize AOV outliers
--   One-hot encode channel & category; bin AOV into tiers
--   Boxplots by channel, heatmap of mean AOV across channel × category
+- Impute missing values + winsorize AOV outliers
+- One-hot encode channel & category; bin AOV into tiers
+- Boxplots by channel, heatmap of mean AOV across channel × category
+
+```{r ao1-heatmap}
+#| echo: false
+#| fig-width: 9
+#| fig-height: 4.5
+
+df_ro1 |>
+  group_by(traffic_source, product_category) |>
+  summarise(mean_aov = round(mean(revenue)), .groups = "drop") |>
+  ggplot(aes(x = traffic_source, y = product_category, fill = mean_aov)) +
+  geom_tile(color = "white", linewidth = 0.6) +
+  geom_text(aes(label = scales::dollar(mean_aov)), size = 3.5, color = "white") +
+  scale_fill_gradient(low = "#1a5276", high = "#b7950b", labels = scales::dollar) +
+  labs(title = "Mean AOV: Traffic Source × Product Category",
+       x = "Traffic Source", y = "Product Category", fill = "Mean AOV ($)") +
+  theme_minimal(base_size = 12) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```
 
 ------------------------------------------------------------------------
 
@@ -199,19 +237,88 @@ highest order value.
 
 ## Prediction & Model Evaluation
 
--   **Regression:** RMSE · MAE · R²
--   **Classification:** Accuracy · F1 · ROC-AUC · Confusion Matrix
--   Select best model per task; evaluate on held-out test set
+- **Regression:** RMSE · MAE · R²
+- **Classification:** Accuracy · F1 · ROC-AUC · Confusion Matrix
+- Select best model per task; evaluate on held-out test set
+
+```{r ao1-eval}
+#| echo: false
+#| fig-width: 9
+#| fig-height: 4.5
+#| cache: true
+
+set.seed(2024)
+ao1_split <- initial_split(df_ro1, prop = 0.80, strata = revenue)
+ao1_train <- training(ao1_split)
+ao1_test  <- testing(ao1_split)
+ao1_folds <- vfold_cv(ao1_train, v = 5, strata = revenue)
+
+base_rec <- recipe(revenue ~ traffic_source + product_category, data = ao1_train) |>
+  step_dummy(all_nominal_predictors(), one_hot = TRUE)
+
+lm_res <- workflow() |>
+  add_recipe(base_rec) |>
+  add_model(linear_reg() |> set_engine("lm")) |>
+  fit_resamples(resamples = ao1_folds, metrics = metric_set(rmse, rsq)) |>
+  collect_metrics() |> mutate(model = "Linear Regression")
+
+rf_res <- workflow() |>
+  add_recipe(base_rec) |>
+  add_model(rand_forest(trees = 100) |> set_engine("ranger") |> set_mode("regression")) |>
+  fit_resamples(resamples = ao1_folds, metrics = metric_set(rmse, rsq)) |>
+  collect_metrics() |> mutate(model = "Random Forest")
+
+bind_rows(lm_res, rf_res) |>
+  filter(.metric == "rmse") |>
+  ggplot(aes(x = reorder(model, mean), y = mean, fill = model)) +
+  geom_col(show.legend = FALSE, alpha = 0.85) +
+  geom_errorbar(aes(ymin = mean - std_err, ymax = mean + std_err),
+                width = 0.3, color = "#b7950b", linewidth = 0.8) +
+  coord_flip() +
+  labs(title = "5-Fold CV RMSE — Model Comparison",
+       subtitle = "Lower RMSE = better | Error bars = ± 1 SE",
+       x = NULL, y = "Mean CV RMSE ($)") +
+  scale_fill_manual(values = c("Linear Regression" = "#1a5276",
+                               "Random Forest"     = "#b7950b")) +
+  theme_minimal(base_size = 12)
+```
 
 ------------------------------------------------------------------------
 
 ## Interpretation
 
--   Variable importance → top AOV-driving features
--   PDPs → isolated effect of channel & category on AOV
--   SHAP → per-order prediction breakdown
--   Interaction heatmap → predicted AOV for every channel × category
-    pair
+- Variable importance → top AOV-driving features
+- PDPs → isolated effect of channel & category on AOV
+- SHAP → per-order prediction breakdown
+- Interaction heatmap → predicted AOV for every channel × category pair
+
+```{r ao1-vip}
+#| echo: false
+#| fig-width: 9
+#| fig-height: 4.5
+#| cache: true
+
+library(vip)
+
+rf_spec <- rand_forest(trees = 100) |>
+  set_engine("ranger", importance = "impurity") |>
+  set_mode("regression")
+
+rf_rec <- recipe(revenue ~ traffic_source + product_category, data = df_ro1) |>
+  step_dummy(all_nominal_predictors(), one_hot = TRUE)
+
+rf_fit <- workflow() |>
+  add_recipe(rf_rec) |>
+  add_model(rf_spec) |>
+  fit(data = df_ro1)
+
+rf_fit |>
+  extract_fit_parsnip() |>
+  vip(num_features = 10,
+      aesthetics = list(fill = "#1a5276", alpha = 0.85)) +
+  labs(title = "Feature Importance — Random Forest (AOV)") +
+  theme_minimal(base_size = 12)
+```
 
 ------------------------------------------------------------------------
 
