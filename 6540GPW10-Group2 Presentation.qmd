@@ -342,18 +342,23 @@ rf_fit |>
 
 # Analytics Objective 2
 
-Identify which customer and transaction characteristics contribute to higher customer satisfaction by examining how product categories, traffic sources, discount levels, and purchasing behavior influence customer `rating`.
+## Customer Satisfaction
 
----
+**Objective:** Identify which customer and transaction characteristics contribute to higher customer satisfaction by examining how product categories, traffic sources, discount levels, and purchasing behavior influence customer `rating`.
 
-## Machine Learning Methods
+### Variables
 
-- **Regression:** Multiple Linear Regression
-- **Ensemble Model:** Random Forest
-- **Primary Outcome:** Customer `rating`
-- **Predictors:** `product_category`, `traffic_source`, `discount_percent`, `quantity`
-- **Validation:** 80/20 train/test split + 5-fold cross-validation
-- **Evaluation:** RMSE, MAE, and R²
+- **Dependent Variable:** `rating`
+- **Independent Variables:** `product_category`, `traffic_source`, `discount_percent`, and `quantity`
+
+### Methods
+
+Two regression approaches were used to evaluate customer satisfaction:
+
+- Multiple Linear Regression
+- Random Forest Regression
+- 80/20 train/test split
+- RMSE, MAE, and R² for model evaluation
 
 ```{r ao2-setup}
 #| include: false
@@ -364,11 +369,13 @@ library(tidyverse)
 library(tidymodels)
 library(janitor)
 library(ranger)
+library(broom)
+library(knitr)
 
 set.seed(2026)
 
 ao2_raw <- read_csv(
-  "shopify_sales_dataset_ml_eda 2.csv",
+  "C:/Users/cherry/Downloads/shopify_sales_dataset_ml_eda.csv",
   show_col_types = FALSE
 ) |>
   clean_names()
@@ -396,45 +403,16 @@ ao2_data <- ao2_raw |>
 
 ---
 
-## Data Wrangling & Visualization
+## Customer Ratings by Traffic Source
 
-- Remove missing values from the variables used in Objective 2
-- Convert `product_category` and `traffic_source` to factors
-- Keep `rating`, `discount_percent`, and `quantity` numeric
-- Compare customer satisfaction across product categories and traffic sources
-- Examine the relationship between discounts and customer ratings
-
-```{r ao2-category-rating}
-#| echo: false
-#| fig-width: 9
-#| fig-height: 4.5
-
-ao2_data |>
-  group_by(product_category) |>
-  summarise(
-    avg_rating = mean(rating),
-    .groups = "drop"
-  ) |>
-  ggplot(
-    aes(
-      x = reorder(product_category, avg_rating),
-      y = avg_rating
-    )
-  ) +
-  geom_col(fill = "steelblue") +
-  coord_flip() +
-  labs(
-    title = "Average Customer Rating by Product Category",
-    x = "Product Category",
-    y = "Average Rating"
-  ) +
-  theme_minimal()
-```
+The distribution of customer ratings was compared across traffic sources to determine whether customers acquired through different marketing channels reported noticeably different satisfaction levels.
 
 ```{r ao2-traffic-rating}
 #| echo: false
 #| fig-width: 9
 #| fig-height: 4.5
+#| message: false
+#| warning: false
 
 ggplot(
   ao2_data,
@@ -458,93 +436,16 @@ ggplot(
   )
 ```
 
-```{r ao2-discount-rating}
-#| echo: false
-#| fig-width: 9
-#| fig-height: 4.5
-
-ggplot(
-  ao2_data,
-  aes(
-    x = discount_percent,
-    y = rating
-  )
-) +
-  geom_point(alpha = 0.2) +
-  geom_smooth(
-    method = "lm",
-    se = TRUE
-  ) +
-  labs(
-    title = "Discount Percentage vs. Customer Rating",
-    x = "Discount Percentage",
-    y = "Customer Rating"
-  ) +
-  theme_minimal()
-```
-
-```{r ao2-heatmap}
-#| echo: false
-#| fig-width: 9
-#| fig-height: 4.5
-
-ao2_data |>
-  group_by(
-    product_category,
-    traffic_source
-  ) |>
-  summarise(
-    avg_rating = mean(rating),
-    .groups = "drop"
-  ) |>
-  ggplot(
-    aes(
-      x = traffic_source,
-      y = product_category,
-      fill = avg_rating
-    )
-  ) +
-  geom_tile(
-    color = "white",
-    linewidth = 0.5
-  ) +
-  geom_text(
-    aes(label = round(avg_rating, 2)),
-    size = 3.5
-  ) +
-  scale_fill_gradient(
-    low = "lightblue",
-    high = "steelblue"
-  ) +
-  labs(
-    title = "Average Rating: Traffic Source × Product Category",
-    x = "Traffic Source",
-    y = "Product Category",
-    fill = "Avg. Rating"
-  ) +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_text(
-      angle = 30,
-      hjust = 1
-    )
-  )
-```
+Customer ratings were relatively similar across traffic sources, suggesting that the marketing channel responsible for generating the purchase was not strongly associated with customer satisfaction.
 
 ---
 
-## Model Fitting
-
-- 80/20 train/test split
-- 5-fold cross-validation
-- Dummy encode categorical predictors
-- Compare Multiple Linear Regression with Random Forest
+## Model Development
 
 ```{r ao2-model-fitting}
 #| include: false
 #| message: false
 #| warning: false
-#| cache: true
 
 set.seed(2026)
 
@@ -556,12 +457,6 @@ ao2_split <- initial_split(
 
 ao2_train <- training(ao2_split)
 ao2_test <- testing(ao2_split)
-
-ao2_folds <- vfold_cv(
-  ao2_train,
-  v = 5,
-  strata = rating
-)
 
 ao2_recipe <- recipe(
   rating ~
@@ -608,21 +503,6 @@ ao2_rf_fit <- fit(
   ao2_rf_wf,
   data = ao2_train
 )
-```
-
----
-
-## Prediction & Model Evaluation
-
-- **RMSE:** Lower is better
-- **MAE:** Lower is better
-- **R²:** Higher is better
-- Best model selected based on held-out test performance
-
-```{r ao2-evaluation}
-#| echo: false
-#| message: false
-#| warning: false
 
 ao2_lm_predictions <- augment(
   ao2_lm_fit,
@@ -641,6 +521,7 @@ ao2_metrics_function <- metric_set(
 )
 
 ao2_metrics <- bind_rows(
+
   ao2_lm_predictions |>
     ao2_metrics_function(
       truth = rating,
@@ -654,12 +535,25 @@ ao2_metrics <- bind_rows(
       estimate = .pred
     ) |>
     mutate(model = "Random Forest")
+
 ) |>
   select(
     model,
     .metric,
     .estimate
   )
+```
+
+---
+
+## Model Performance
+
+The two models produced nearly identical prediction accuracy.
+
+```{r ao2-model-table}
+#| echo: false
+#| message: false
+#| warning: false
 
 ao2_metrics |>
   mutate(
@@ -682,152 +576,56 @@ ao2_metrics |>
       "MAE",
       "R²"
     ),
-    caption = "AO2 Customer Rating Model Performance"
+    caption = "Customer Rating Model Performance"
   )
 ```
 
----
-
-## Model Comparison
-
 ```{r ao2-model-comparison}
 #| echo: false
-#| fig-width: 9
-#| fig-height: 4.5
+#| fig-width: 8
+#| fig-height: 4
+#| message: false
+#| warning: false
 
 ao2_metrics |>
   filter(.metric == "rmse") |>
   ggplot(
     aes(
-      x = reorder(model, .estimate),
+      x = model,
       y = .estimate
     )
   ) +
   geom_col(
     fill = "steelblue",
-    alpha = 0.85
+    width = 0.6
   ) +
   geom_text(
     aes(
       label = round(.estimate, 3)
     ),
-    hjust = -0.15,
+    vjust = -0.5,
     size = 4
   ) +
-  coord_flip() +
   labs(
-    title = "Customer Rating Prediction — Model Comparison",
-    subtitle = "Lower test RMSE indicates better performance",
+    title = "Linear Regression vs. Random Forest",
+    subtitle = "Lower RMSE indicates better predictive performance",
     x = NULL,
-    y = "Test RMSE"
+    y = "RMSE"
   ) +
   theme_minimal()
 ```
 
----
-
-## Interpretation
-
-Multiple Linear Regression is used to determine which customer and transaction characteristics are associated with higher or lower customer ratings while holding the other predictors constant.
-
-```{r ao2-regression-results}
-#| echo: false
-#| message: false
-#| warning: false
-
-ao2_lm_fit |>
-  extract_fit_parsnip() |>
-  tidy(
-    conf.int = TRUE
-  ) |>
-  filter(
-    term != "(Intercept)"
-  ) |>
-  arrange(
-    p.value
-  ) |>
-  mutate(
-    estimate = round(estimate, 3),
-    p.value = round(p.value, 4),
-    conf.low = round(conf.low, 3),
-    conf.high = round(conf.high, 3)
-  ) |>
-  select(
-    term,
-    estimate,
-    p.value,
-    conf.low,
-    conf.high
-  ) |>
-  knitr::kable(
-    col.names = c(
-      "Predictor",
-      "Estimate",
-      "p-value",
-      "95% CI Low",
-      "95% CI High"
-    ),
-    caption = "Multiple Linear Regression Results"
-  )
-```
-
-Random Forest variable importance provides an additional view of which predictors contain the most predictive information for customer ratings.
-
-```{r ao2-variable-importance}
-#| echo: false
-#| fig-width: 9
-#| fig-height: 4.5
-
-ao2_rf_engine <- ao2_rf_fit |>
-  extract_fit_engine()
-
-ao2_importance <- tibble(
-  Variable = names(
-    ao2_rf_engine$variable.importance
-  ),
-  Importance = as.numeric(
-    ao2_rf_engine$variable.importance
-  )
-) |>
-  arrange(
-    desc(Importance)
-  )
-
-ao2_importance |>
-  slice_head(
-    n = 10
-  ) |>
-  ggplot(
-    aes(
-      x = reorder(
-        Variable,
-        Importance
-      ),
-      y = Importance
-    )
-  ) +
-  geom_col(
-    fill = "steelblue"
-  ) +
-  coord_flip() +
-  labs(
-    title = "Feature Importance — Customer Satisfaction",
-    x = "Predictor",
-    y = "Importance"
-  ) +
-  theme_minimal()
-```
+The Linear Regression model produced an RMSE of approximately **1.15**, while the Random Forest model produced nearly the same result. Both models also had an R² of approximately **0**, indicating that the selected variables explained very little variation in customer ratings.
 
 ---
 
 ## Summary Findings
 
-- Customer satisfaction remained relatively consistent across product categories and traffic sources.
-- Product category showed some variation in average customer ratings, but no single category overwhelmingly drove satisfaction.
-- Discount percentage showed a weak relationship with customer rating, suggesting that larger discounts do not necessarily lead to more satisfied customers.
-- Quantity purchased also showed limited influence on overall customer satisfaction.
-- Overall, the results suggest that customer satisfaction is influenced by factors beyond basic transaction and marketing characteristics.
-- Businesses should focus on the overall customer experience rather than relying only on discounts or acquisition channels to improve ratings.
+- Product category, traffic source, discount percentage, and quantity did **not show a strong relationship with customer ratings**.
+- Linear Regression and Random Forest produced nearly identical predictive performance, with an RMSE of approximately **1.15**.
+- Both models had an **R² of approximately 0**, meaning the selected predictors explained very little of the variation in customer satisfaction.
+- The regression analysis did not identify any of the tested predictors as statistically significant.
+- Overall, customer satisfaction may be influenced more strongly by factors not captured in these variables, such as **product quality, delivery experience, or customer service**.
 
 # Analytics Objective 3
 
