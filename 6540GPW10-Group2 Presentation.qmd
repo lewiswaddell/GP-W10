@@ -341,29 +341,38 @@ rf_fit |>
 - Prioritize marketing spend on **Social Media → Electronics & Accessories** to maximize revenue per order
 
 # Analytics Objective 2
+
 Identify which customer and transaction characteristics contribute to higher customer satisfaction by examining how product categories, traffic sources, discount levels, and purchasing behavior influence customer `rating`.
+
 ---
+
 ## Machine Learning Methods
+
 - **Regression:** Multiple Linear Regression
 - **Ensemble Model:** Random Forest
 - **Primary Outcome:** Customer `rating`
 - **Predictors:** `product_category`, `traffic_source`, `discount_percent`, `quantity`
 - **Validation:** 80/20 train/test split + 5-fold cross-validation
 - **Evaluation:** RMSE, MAE, and R²
+
 ```{r ao2-setup}
 #| include: false
 #| message: false
 #| warning: false
+
 library(tidyverse)
 library(tidymodels)
 library(janitor)
 library(ranger)
+
 set.seed(2026)
+
 ao2_raw <- read_csv(
   "shopify_sales_dataset_ml_eda 2.csv",
   show_col_types = FALSE
 ) |>
   clean_names()
+
 ao2_data <- ao2_raw |>
   select(
     rating,
@@ -384,17 +393,22 @@ ao2_data <- ao2_raw |>
     traffic_source = factor(traffic_source)
   )
 ```
+
 ---
+
 ## Data Wrangling & Visualization
+
 - Remove missing values from the variables used in Objective 2
 - Convert `product_category` and `traffic_source` to factors
 - Keep `rating`, `discount_percent`, and `quantity` numeric
 - Compare customer satisfaction across product categories and traffic sources
 - Examine the relationship between discounts and customer ratings
+
 ```{r ao2-category-rating}
 #| echo: false
 #| fig-width: 9
 #| fig-height: 4.5
+
 ao2_data |>
   group_by(product_category) |>
   summarise(
@@ -416,10 +430,12 @@ ao2_data |>
   ) +
   theme_minimal()
 ```
+
 ```{r ao2-traffic-rating}
 #| echo: false
 #| fig-width: 9
 #| fig-height: 4.5
+
 ggplot(
   ao2_data,
   aes(
@@ -441,10 +457,12 @@ ggplot(
     )
   )
 ```
+
 ```{r ao2-discount-rating}
 #| echo: false
 #| fig-width: 9
 #| fig-height: 4.5
+
 ggplot(
   ao2_data,
   aes(
@@ -464,10 +482,12 @@ ggplot(
   ) +
   theme_minimal()
 ```
+
 ```{r ao2-heatmap}
 #| echo: false
 #| fig-width: 9
 #| fig-height: 4.5
+
 ao2_data |>
   group_by(
     product_category,
@@ -510,30 +530,39 @@ ao2_data |>
     )
   )
 ```
+
 ---
+
 ## Model Fitting
+
 - 80/20 train/test split
 - 5-fold cross-validation
 - Dummy encode categorical predictors
 - Compare Multiple Linear Regression with Random Forest
+
 ```{r ao2-model-fitting}
 #| include: false
 #| message: false
 #| warning: false
 #| cache: true
+
 set.seed(2026)
+
 ao2_split <- initial_split(
   ao2_data,
   prop = 0.80,
   strata = rating
 )
+
 ao2_train <- training(ao2_split)
 ao2_test <- testing(ao2_split)
+
 ao2_folds <- vfold_cv(
   ao2_train,
   v = 5,
   strata = rating
 )
+
 ao2_recipe <- recipe(
   rating ~
     product_category +
@@ -547,8 +576,10 @@ ao2_recipe <- recipe(
     one_hot = TRUE
   ) |>
   step_zv(all_predictors())
+
 ao2_lm_spec <- linear_reg() |>
   set_engine("lm")
+
 ao2_rf_spec <- rand_forest(
   trees = 500,
   mtry = 4,
@@ -559,44 +590,56 @@ ao2_rf_spec <- rand_forest(
     importance = "impurity"
   ) |>
   set_mode("regression")
+
 ao2_lm_wf <- workflow() |>
   add_recipe(ao2_recipe) |>
   add_model(ao2_lm_spec)
+
 ao2_rf_wf <- workflow() |>
   add_recipe(ao2_recipe) |>
   add_model(ao2_rf_spec)
+
 ao2_lm_fit <- fit(
   ao2_lm_wf,
   data = ao2_train
 )
+
 ao2_rf_fit <- fit(
   ao2_rf_wf,
   data = ao2_train
 )
 ```
+
 ---
+
 ## Prediction & Model Evaluation
+
 - **RMSE:** Lower is better
 - **MAE:** Lower is better
 - **R²:** Higher is better
 - Best model selected based on held-out test performance
+
 ```{r ao2-evaluation}
 #| echo: false
 #| message: false
 #| warning: false
+
 ao2_lm_predictions <- augment(
   ao2_lm_fit,
   new_data = ao2_test
 )
+
 ao2_rf_predictions <- augment(
   ao2_rf_fit,
   new_data = ao2_test
 )
+
 ao2_metrics_function <- metric_set(
   rmse,
   mae,
   rsq
 )
+
 ao2_metrics <- bind_rows(
   ao2_lm_predictions |>
     ao2_metrics_function(
@@ -604,6 +647,7 @@ ao2_metrics <- bind_rows(
       estimate = .pred
     ) |>
     mutate(model = "Linear Regression"),
+
   ao2_rf_predictions |>
     ao2_metrics_function(
       truth = rating,
@@ -616,6 +660,7 @@ ao2_metrics <- bind_rows(
     .metric,
     .estimate
   )
+
 ao2_metrics |>
   mutate(
     .estimate = round(.estimate, 3)
@@ -640,12 +685,16 @@ ao2_metrics |>
     caption = "AO2 Customer Rating Model Performance"
   )
 ```
+
 ---
+
 ## Model Comparison
+
 ```{r ao2-model-comparison}
 #| echo: false
 #| fig-width: 9
 #| fig-height: 4.5
+
 ao2_metrics |>
   filter(.metric == "rmse") |>
   ggplot(
@@ -674,13 +723,18 @@ ao2_metrics |>
   ) +
   theme_minimal()
 ```
+
 ---
+
 ## Interpretation
+
 Multiple Linear Regression is used to determine which customer and transaction characteristics are associated with higher or lower customer ratings while holding the other predictors constant.
+
 ```{r ao2-regression-results}
 #| echo: false
 #| message: false
 #| warning: false
+
 ao2_lm_fit |>
   extract_fit_parsnip() |>
   tidy(
@@ -716,13 +770,17 @@ ao2_lm_fit |>
     caption = "Multiple Linear Regression Results"
   )
 ```
+
 Random Forest variable importance provides an additional view of which predictors contain the most predictive information for customer ratings.
+
 ```{r ao2-variable-importance}
 #| echo: false
 #| fig-width: 9
 #| fig-height: 4.5
+
 ao2_rf_engine <- ao2_rf_fit |>
   extract_fit_engine()
+
 ao2_importance <- tibble(
   Variable = names(
     ao2_rf_engine$variable.importance
@@ -734,6 +792,7 @@ ao2_importance <- tibble(
   arrange(
     desc(Importance)
   )
+
 ao2_importance |>
   slice_head(
     n = 10
@@ -758,15 +817,17 @@ ao2_importance |>
   ) +
   theme_minimal()
 ```
----
-## Summary Findings
-- Customer satisfaction, measured by `rating`, showed no meaningful relationship with product category, traffic source, discount percentage, or quantity purchased.
-- The Multiple Linear Regression model explained essentially none of the variance in ratings (test R² ≈ 0.00), and the overall F-test was not statistically significant (F = 0.48, p = 0.93) — the four predictors, taken together, are not reliably associated with rating.
-- No individual predictor reached conventional significance (p < 0.05): coefficients for every product category, every traffic source, discount percent, and quantity were all statistically indistinguishable from zero.
-- Random Forest did not outperform Linear Regression (test RMSE 1.169 vs. 1.152; R² -0.03 vs. 0.00), indicating there is no nonlinear or interaction structure among these variables that better explains ratings.
-- RMSE and MAE were nearly identical across both models (~1.15 RMSE, ~1.00 MAE), and 5-fold cross-validation results matched held-out test performance — the models aren't overfitting, they simply aren't finding a signal because one isn't present in these variables.
-- Overall, customer satisfaction in this dataset does not appear to be driven by product category, traffic source, discount level, or order quantity; other unmeasured factors (e.g., product quality, delivery experience, or inherent rating noise) are more likely explanations for the variation in ratings.
 
+---
+
+## Summary Findings
+
+- Customer satisfaction remained relatively consistent across product categories and traffic sources.
+- Product category showed some variation in average customer ratings, but no single category overwhelmingly drove satisfaction.
+- Discount percentage showed a weak relationship with customer rating, suggesting that larger discounts do not necessarily lead to more satisfied customers.
+- Quantity purchased also showed limited influence on overall customer satisfaction.
+- Overall, the results suggest that customer satisfaction is influenced by factors beyond basic transaction and marketing characteristics.
+- Businesses should focus on the overall customer experience rather than relying only on discounts or acquisition channels to improve ratings.
 
 # Analytics Objective 3
 
