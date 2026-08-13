@@ -376,7 +376,7 @@ library(knitr)
 set.seed(2026)
 
 ao2_raw <- read_csv(
-  "C:/Users/cherry/Downloads/shopify_sales_dataset_ml_eda.csv",
+  "shopify_sales_dataset_ml_eda 2.csv",
   show_col_types = FALSE
 ) |>
   clean_names()
