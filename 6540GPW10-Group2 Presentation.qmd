@@ -351,6 +351,7 @@ rf_fit |>
 - **Dependent Variable:** `rating`
 - **Independent Variables:** `product_category`, `traffic_source`, `discount_percent`, and `quantity`
 
+
 ### Methods
 
 Two regression approaches were used to evaluate customer satisfaction:
@@ -405,7 +406,7 @@ ao2_data <- ao2_raw |>
 
 ## Customer Ratings by Traffic Source
 
-The distribution of customer ratings was compared across traffic sources to determine whether customers acquired through different marketing channels reported noticeably different satisfaction levels.
+Customer ratings were compared across traffic sources to determine whether customers from different marketing channels showed differences in satisfaction.
 
 ```{r ao2-traffic-rating}
 #| echo: false
@@ -436,11 +437,13 @@ ggplot(
   )
 ```
 
-Customer ratings were relatively similar across traffic sources, suggesting that the marketing channel responsible for generating the purchase was not strongly associated with customer satisfaction.
+The distributions were relatively similar across traffic sources, suggesting that marketing channel was not strongly associated with customer satisfaction.
 
 ---
 
 ## Model Development
+
+An 80/20 train/test split was used to compare Multiple Linear Regression and Random Forest Regression.
 
 ```{r ao2-model-fitting}
 #| include: false
@@ -600,9 +603,7 @@ ao2_metrics |>
     width = 0.6
   ) +
   geom_text(
-    aes(
-      label = round(.estimate, 3)
-    ),
+    aes(label = round(.estimate, 3)),
     vjust = -0.5,
     size = 4
   ) +
@@ -615,17 +616,17 @@ ao2_metrics |>
   theme_minimal()
 ```
 
-The Linear Regression model produced an RMSE of approximately **1.15**, while the Random Forest model produced nearly the same result. Both models also had an R² of approximately **0**, indicating that the selected variables explained very little variation in customer ratings.
+The Linear Regression model achieved an RMSE of approximately **1.15**, while the Random Forest model produced nearly identical performance. Both models had an R² of approximately **0**, meaning that the selected predictors explained very little variation in customer ratings.
 
 ---
 
 ## Summary Findings
 
 - Product category, traffic source, discount percentage, and quantity did **not show a strong relationship with customer ratings**.
-- Linear Regression and Random Forest produced nearly identical predictive performance, with an RMSE of approximately **1.15**.
-- Both models had an **R² of approximately 0**, meaning the selected predictors explained very little of the variation in customer satisfaction.
-- The regression analysis did not identify any of the tested predictors as statistically significant.
-- Overall, customer satisfaction may be influenced more strongly by factors not captured in these variables, such as **product quality, delivery experience, or customer service**.
+- Linear Regression and Random Forest produced nearly identical results, with an RMSE of approximately **1.15**.
+- Both models had an **R² of approximately 0**, indicating that the selected variables explained very little variation in customer satisfaction.
+- None of the tested predictors were statistically significant.
+- Overall, customer satisfaction may be influenced more by factors not included in the model, such as **product quality, delivery experience, or customer service**.
 
 # Analytics Objective 3
 
